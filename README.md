@@ -32,3 +32,7 @@ The site now includes a Supabase backend bridge. It stays in local mode until re
 - Trade chat on every trade post. Local chat works immediately; Supabase makes chat persistent/realtime.
 - Real cross-device online presence uses Supabase Realtime Presence when a real Supabase project is configured.
 - IMPORTANT: Supabase config is still placeholder until you add your own project URL/publishable key and run `supabase-schema.sql`. The owner tag is a client-side visual until a server-side owner role is added.
+
+
+## September 3, 2026 Sprite Update
+SpriteSwap now tracks 16 live Sprite families and 46 live variants. The v42.10 update added X-Ray, Onigiri, Mega Man and Overshield; Mega Man is currently Base-only, while X-Ray, Onigiri and Overshield also have Gold and Cheat Master variants.

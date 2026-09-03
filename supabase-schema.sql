@@ -1,160 +1,127 @@
 -- SpriteSwap backend schema
--- Run this once in Supabase SQL Editor.
+create table if not exists public.profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  username text not null,
+  display_name text,
+  role text not null default 'user' check (role in ('user','owner')),
+  avatar_url text,
+  background_url text,
+  tag text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
-create extension if not exists pgcrypto;
+create unique index if not exists profiles_username_lower_idx
+  on public.profiles(lower(username));
 
 create table if not exists public.trades (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  username text not null,
-  tier text not null default 'Base',
-  offer jsonb not null default '[]'::jsonb,
-  want jsonb not null default '[]'::jsonb,
-  note text not null default '',
-  status text not null default 'open',
+  user_id uuid references auth.users(id) on delete cascade,
+  username text,
+  offering jsonb not null default '[]'::jsonb,
+  wants jsonb not null default '[]'::jsonb,
+  note text default '',
   created_at timestamptz not null default now()
 );
 
 create table if not exists public.trade_offers (
   id uuid primary key default gen_random_uuid(),
-  from_user_id uuid not null references auth.users(id) on delete cascade,
-  from_username text not null,
-  to_username text not null,
-  offer jsonb not null default '[]'::jsonb,
-  want jsonb not null default '[]'::jsonb,
+  from_user_id uuid references auth.users(id) on delete cascade,
+  to_user_id uuid references auth.users(id) on delete cascade,
+  trade_id uuid references public.trades(id) on delete cascade,
+  offering jsonb not null default '[]'::jsonb,
+  wants jsonb not null default '[]'::jsonb,
   status text not null default 'pending',
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
   title text not null,
-  text text not null,
+  body text not null,
   read boolean not null default false,
   created_at timestamptz not null default now()
 );
 
-create index if not exists trades_created_idx on public.trades(created_at desc);
-create index if not exists trades_status_idx on public.trades(status);
-create index if not exists notifications_user_idx on public.notifications(user_id,created_at desc);
+create table if not exists public.trade_chat (
+  id uuid primary key default gen_random_uuid(),
+  trade_id uuid references public.trades(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  username text,
+  message text not null,
+  created_at timestamptz not null default now()
+);
 
+alter table public.profiles enable row level security;
 alter table public.trades enable row level security;
 alter table public.trade_offers enable row level security;
 alter table public.notifications enable row level security;
-
-drop policy if exists "Anyone can read open trades" on public.trades;
-create policy "Anyone can read open trades" on public.trades for select using (status='open');
-
-drop policy if exists "Signed in users can post trades" on public.trades;
-create policy "Signed in users can post trades" on public.trades for insert to authenticated with check (auth.uid()=user_id);
-
-drop policy if exists "Users can update their trades" on public.trades;
-create policy "Users can update their trades" on public.trades for update to authenticated using (auth.uid()=user_id) with check (auth.uid()=user_id);
-
-drop policy if exists "Users can delete their trades" on public.trades;
-create policy "Users can delete their trades" on public.trades for delete to authenticated using (auth.uid()=user_id);
-
-drop policy if exists "Signed in users can send offers" on public.trade_offers;
-create policy "Signed in users can send offers" on public.trade_offers for insert to authenticated with check (auth.uid()=from_user_id);
-
-drop policy if exists "Users can read their sent offers" on public.trade_offers;
-create policy "Users can read their sent offers" on public.trade_offers for select to authenticated using (auth.uid()=from_user_id);
-
-drop policy if exists "Users can read notifications" on public.notifications;
-create policy "Users can read notifications" on public.notifications for select to authenticated using (auth.uid()=user_id);
-
-drop policy if exists "Users can delete notifications" on public.notifications;
-create policy "Users can delete notifications" on public.notifications for delete to authenticated using (auth.uid()=user_id);
-
-drop policy if exists "Users can update notifications" on public.notifications;
-create policy "Users can update notifications" on public.notifications for update to authenticated using (auth.uid()=user_id) with check (auth.uid()=user_id);
-
--- Notifications sent by the client are intentionally limited to the authenticated user's own row.
--- For server-to-user notifications, use a trusted server/Edge Function rather than exposing a service-role key.
-
-create table if not exists public.profiles (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  username text not null,
-  updated_at timestamptz not null default now()
-);
-create unique index if not exists profiles_username_lower_idx on public.profiles(lower(username));
-alter table public.profiles enable row level security;
-drop policy if exists "Anyone can read profiles" on public.profiles;
-create policy "Anyone can read profiles" on public.profiles for select using (true);
-drop policy if exists "Users can manage their profile" on public.profiles;
-create policy "Users can manage their profile" on public.profiles for insert to authenticated with check (auth.uid()=user_id);
-drop policy if exists "Users can update their profile" on public.profiles;
-create policy "Users can update their profile" on public.profiles for update to authenticated using (auth.uid()=user_id) with check (auth.uid()=user_id);
-
-alter table public.trade_offers add column if not exists to_user_id uuid references auth.users(id) on delete cascade;
-
-drop policy if exists "Users can read incoming offers" on public.trade_offers;
-create policy "Users can read incoming offers" on public.trade_offers for select to authenticated using (auth.uid()=from_user_id or auth.uid()=to_user_id);
-
--- When an offer is sent, create a notification for the recipient automatically.
-create or replace function public.notify_trade_offer() returns trigger language plpgsql security definer set search_path=public as $$
-begin
-  if new.to_user_id is not null then
-    insert into public.notifications(user_id,title,text,read)
-    values(new.to_user_id,'New trade offer','' || new.from_username || ' sent you a SpriteSwap trade offer.',false);
-  end if;
-  return new;
-end; $$;
-
-drop trigger if exists trade_offer_notification on public.trade_offers;
-create trigger trade_offer_notification after insert on public.trade_offers for each row execute function public.notify_trade_offer();
-
--- SpriteSwap V20: persistent trade chat. Enable Realtime for this table in Supabase.
-create table if not exists public.trade_chat (
-  id bigint generated by default as identity primary key,
-  trade_id text not null,
-  user_id uuid references auth.users(id) on delete cascade,
-  username text not null,
-  message text not null check (char_length(message) between 1 and 240),
-  created_at timestamptz not null default now()
-);
 alter table public.trade_chat enable row level security;
-create policy "trade chat readable" on public.trade_chat for select using (true);
-create policy "signed in users can chat" on public.trade_chat for insert with check (auth.uid() = user_id);
-create index if not exists trade_chat_trade_idx on public.trade_chat(trade_id, created_at);
 
+-- Public profile/trade visibility.
+drop policy if exists "profiles read" on public.profiles;
+create policy "profiles read" on public.profiles for select using (true);
 
--- SpriteSwap V22: globally unique usernames (case-insensitive).
-create unique index if not exists profiles_username_lower_idx on public.profiles(lower(username));
+drop policy if exists "trades read" on public.trades;
+create policy "trades read" on public.trades for select using (true);
 
--- SpriteSwap V21: server-authoritative Owner role.
--- Run this after the original SpriteSwap schema. Do NOT store owner status in localStorage.
-alter table public.profiles add column if not exists role text not null default 'user';
-alter table public.profiles drop constraint if exists profiles_role_check;
-alter table public.profiles add constraint profiles_role_check check (role in ('user','owner'));
+drop policy if exists "chat read" on public.trade_chat;
+create policy "chat read" on public.trade_chat for select using (true);
 
--- Normal users may only create/update themselves as regular users.
-drop policy if exists "Users can manage their profile" on public.profiles;
-create policy "Users can create regular profiles" on public.profiles for insert to authenticated
-  with check (auth.uid()=user_id and role='user');
-drop policy if exists "Users can update their profile" on public.profiles;
-create policy "Users can update profile fields" on public.profiles for update to authenticated
-  using (auth.uid()=user_id)
-  with check (auth.uid()=user_id);
+-- Users may create/update their own profile, but cannot promote themselves.
+drop policy if exists "profile insert own" on public.profiles;
+create policy "profile insert own" on public.profiles
+for insert with check (auth.uid()=user_id and role='user');
 
--- Prevent browser clients from changing role after a profile exists.
+drop policy if exists "profile update own" on public.profiles;
+create policy "profile update own" on public.profiles
+for update using (auth.uid()=user_id)
+with check (auth.uid()=user_id and role=(select p.role from public.profiles p where p.user_id=auth.uid()));
+
 create or replace function public.prevent_client_role_change()
-returns trigger language plpgsql security definer set search_path=public as $$
+returns trigger
+language plpgsql
+security definer
+set search_path=public
+as $$
 begin
-  if tg_op='UPDATE' and new.role is distinct from old.role then
-    if coalesce(auth.jwt()->>'role','') <> 'service_role' then
-      raise exception 'Owner role can only be changed by a trusted server';
-    end if;
+  if new.role is distinct from old.role and coalesce(auth.role(),'') <> 'service_role' then
+    raise exception 'Only the server can change owner roles';
   end if;
   return new;
-end; $$;
+end;
+$$;
 
 drop trigger if exists protect_profile_role on public.profiles;
 create trigger protect_profile_role
 before update on public.profiles
 for each row execute function public.prevent_client_role_change();
 
--- IMPORTANT: after your CoolGuy_247 account exists, run this ONCE from the Supabase SQL editor.
--- The username is globally unique (case-insensitive), and the Owner role is still server-authoritative.
--- update public.profiles set role='owner' where lower(username)=lower('CoolGuy_247');
+-- Trades/chat/offers/notifications.
+drop policy if exists "trades insert own" on public.trades;
+create policy "trades insert own" on public.trades
+for insert with check (auth.uid()=user_id);
+
+drop policy if exists "chat insert own" on public.trade_chat;
+create policy "chat insert own" on public.trade_chat
+for insert with check (auth.uid()=user_id);
+
+drop policy if exists "offers read own" on public.trade_offers;
+create policy "offers read own" on public.trade_offers
+for select using (auth.uid()=from_user_id or auth.uid()=to_user_id);
+
+drop policy if exists "offers insert own" on public.trade_offers;
+create policy "offers insert own" on public.trade_offers
+for insert with check (auth.uid()=from_user_id);
+
+drop policy if exists "notifications own" on public.notifications;
+create policy "notifications own" on public.notifications
+for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+
+-- Make CoolGuy_247 the owner after creating that account.
+-- Run this once in Supabase SQL editor using your real owner account:
+-- update public.profiles
+-- set role='owner'
+-- where lower(username)=lower('CoolGuy_247');

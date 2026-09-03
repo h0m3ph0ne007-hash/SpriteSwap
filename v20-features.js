@@ -30,7 +30,7 @@
     ['first-sprite','FIRST FIND','Collect your first Sprite.',()=>collected.length>=1,'🧩'],
     ['five-sprites','STARTER COLLECTOR','Collect 5 Sprites.',()=>collected.length>=5,'📦'],
     ['ten-sprites','COLLECTION CREW','Collect 10 Sprites.',()=>collected.length>=10,'🔥'],
-    ['all-sprites','FULL SET','Collect all 36 current variants.',()=>collected.length>=36,'🏆'],
+    ['all-sprites','FULL SET','Collect all 46 live variants.',()=>collected.length>=46,'🏆'],
     ['first-trade','FIRST SWAP','Post your first trade.',()=>userTrades().length>=1,'🔄'],
     ['ten-trades','TRADE MACHINE','Post 10 trades.',()=>userTrades().length>=10,'⚡'],
     ['first-master','MASTER','Master your first variant.',()=>mastered.length>=1,'★'],
@@ -70,7 +70,7 @@
     const raw=(document.getElementById('spriteSearch')?.value||'').trim().toLowerCase();
     const terms=raw.split(/\s+/).filter(Boolean);const status=document.getElementById('statusFilter')?.value||'All';const variant=document.getElementById('variantFilter')?.value||'All';
     let list=[];Object.entries(tiers).forEach(([t,a])=>a.forEach(n=>{
-      const hay=`${n} ${t} ${n.replace(/^Gold |^Cheat Master /,'')}`.toLowerCase();
+      const hay=`${n} ${t} ${n.replace(/^(Gold |Cheat Master )/,'')}`.toLowerCase();
       const aliases={normal:'base',cheat:'cheat master',master:'cheat master',cm:'cheat master'};
       const q=terms.map(x=>aliases[x]||x);
       const matches=q.every(x=>hay.includes(x));
