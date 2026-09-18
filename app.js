@@ -1,16 +1,16 @@
 window.SPRITESWAP_DISCORD_INVITE="https://discord.gg/kS5Xf35Vf";
-const SPRITES={"Killswitch":"killswitch","8-Bit":"8bit","Adventure":"adventure","Crown":"crown","Jackrabbit":"jackrabbit","Jonesy":"jonesy","Klombo":"klombo","Shadow":"shadow","Sonic":"sonic","Storm Scout":"stormscout","Tails":"tails","Bush":"bush","Mega Man":"mega-man","Overshield":"overshield","Onigiri":"onigiri","X-Ray":"x-ray"};
+const SPRITES={"Killswitch":"killswitch","8-Bit":"8bit","Adventure":"adventure","Crown":"crown","Jackrabbit":"jackrabbit","Jonesy":"jonesy","Klombo":"klombo","Shadow":"shadow","Sonic":"sonic","Storm Scout":"stormscout","Tails":"tails","Bush":"bush","Mega Man":"mega-man","Overshield":"overshield","Onigiri":"onigiri","X-Ray":"x-ray","Blinky":"blinky","Crash Bandicoot":"crash-bandicoot","Pond":"pond"};
 const SPRITE_NAMES=Object.keys(SPRITES);
-const NEW_SPRITES=["Mega Man","Overshield","Onigiri","X-Ray"];
-const VARIANTABLE_NEW=["Overshield","Onigiri","X-Ray"];
+const NEW_SPRITES=["Mega Man","Overshield","Onigiri","X-Ray","Blinky","Crash Bandicoot","Pond"];
+const VARIANTABLE_NEW=["Overshield","Onigiri","X-Ray","Blinky","Crash Bandicoot","Pond"];
 const tiers={
  Base:SPRITE_NAMES,
  Gold:SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Gold "+x),
  "Cheat Master":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Cheat Master "+x),
- "Loot Master":["Loot Master Crown"]
+ "Loot Master":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Loot Master "+x)
 };
 const ALL_SPRITES=Object.values(tiers).flat();
-const TOTAL_SPRITES=ALL_SPRITES.length; // 47 live variants in the current SpriteSwap catalog
+const TOTAL_SPRITES=ALL_SPRITES.length; // 73 released variants in the current v42.20 Sprite catalog
 const SPRITE_FAMILIES=SPRITE_NAMES.length;
 
 const SPRITE_LOCATIONS={
@@ -30,7 +30,13 @@ const SPRITE_LOCATIONS={
   "Overshield":"High and mountainous areas; also from chests and Cheat Codes.",
   "Onigiri":"Found in chests and through Cheat Codes; Rare Cheat Codes give the best odds.",
   "X-Ray":"Found through the seasonal Cheat Code / Sprite chest system; Legendary rarity means rarer drops.",
-  "Loot Master Crown":"Unlocked by mastering the Gold Crown Sprite — win a match with Gold Crown equipped. Fortnite.GG lists this variant as Loot Hacker Crown."
+  "Blinky":"Found in the world at nighttime; also available through chests and Cheat Codes.",
+  "Crash Bandicoot":"Spotted near high and mountainous areas; also available through chests and Cheat Codes.",
+  "Pond":"Found through the Season 4 Sprite pool, chests and Cheat Codes. Epic has not published a specific spawn area.",
+  "Loot Master Crown":"Crown's Loot Hacker variant is part of the current live Season 4 catalog.",
+  "Loot Master Blinky":"Loot Hacker Blinky is a live v42.20 variant.",
+  "Loot Master Crash Bandicoot":"Loot Hacker Crash Bandicoot is a live v42.20 variant.",
+  "Loot Master Pond":"Loot Hacker Pond is a live v42.20 variant."
 };
 function spriteLocation(name){return SPRITE_LOCATIONS[name.replace(/^Gold |^Cheat Master |^Loot Master /,'')]||"Found on the Chapter 7 Season 4 Override island through the Sprite pool."}
 
@@ -40,13 +46,14 @@ const NEW_THIS_WEEK=[
  {name:"Mega Man",type:"NEW",status:"LIVE NOW",image:"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_ImprovedSlide_L.webp",note:"New Sprite. Reduces friction while sliding or swimming so you can slide farther as you level it up."},
  {name:"Overshield",type:"NEW",status:"LIVE NOW",image:"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_L.webp",note:"New Sprite. Grants Overshield, with the amount scaling with Sprite Level."}
 ];
-const UNRELEASED_LOOT_MASTERS=[
-  ["Jonesy","loot-master-jonesy"],["Adventure","loot-master-adventure"],["Bush","loot-master-bush"],["Sonic","loot-master-sonic"],["Tails","loot-master-tails"],["Shadow","loot-master-shadow"],["8-Bit","loot-master-8bit"],["Jackrabbit","loot-master-jackrabbit"],["Killswitch","loot-master-killswitch"],["Klombo","loot-master-klombo"],["Overshield","loot-master-overshield"],["X-Ray","loot-master-x-ray"],["Onigiri","loot-master-onigiri"],["Storm Scout","loot-master-stormscout"]
-].map(([name,slug])=>({name:`Loot Master ${name}`,type:"UNRELEASED",status:"NOT LIVE",image:`https://api.spritetrading.com/sprites/${slug}.webp?w=192`,note:`Loot Master ${name} variant is listed in the current unreleased catalog. It is not collectible or tradeable yet.`}));
+const UNRELEASED_LOOT_MASTERS=[];
 const UPCOMING=[
  {name:"Dumpster Dive",type:"UPCOMING",image:"https://pbs.twimg.com/media/HPH1muLWIAAbvWh.jpg",pos:"78% 73%",note:"Community-designed Sprite announced for a later mid-season update."},
  {name:"Honey",type:"UPCOMING",image:"https://pbs.twimg.com/media/HPH1muLWIAAbvWh.jpg",pos:"79% 52%",note:"Community-designed Sprite announced for a later mid-season update."},
- {name:"Pond",type:"UPCOMING",image:"https://pbs.twimg.com/media/HPH1muLWIAAbvWh.jpg",pos:"42% 22%",note:"Community-designed Sprite announced for a later mid-season update."}
+ {name:"Pond",type:"NEW",status:"LIVE NOW",image:"https://api.spritetrading.com/sprites/pond.webp?w=192",note:"Design-A-Sprite winner. Live in v42.20 with Normal, Gold, Cheat Master and Loot Hacker variants."},
+ {name:"Bounty Hunter Variants",type:"UPCOMING",status:"SEPT 24",image:"https://api.spritetrading.com/sprites/crown.webp?w=192",note:"Epic says Bounty Hunter Sprite variants arrive September 24 and level only from eliminations."},
+ {name:"Birthday",type:"UPCOMING",status:"SEPT 26",image:"https://api.spritetrading.com/sprites/birthday.webp?w=192",note:"Epic says Birthday Sprite becomes available starting September 26."},
+ {name:"Morgana",type:"UPCOMING",status:"UNANNOUNCED",image:"https://api.spritetrading.com/sprites/morgana.webp?w=192",note:"Present in current files according to Sprite tracking sources, but no Epic release date has been announced."}
 ];
 const BACKGROUNDS={
  "Midnight":"linear-gradient(135deg,#070b10,#0d1320 55%,#111827)",
@@ -151,7 +158,7 @@ function markNotificationsRead(){const a=notifications().map(x=>({...x,read:true
 function save(){localStorage.ss_collected=JSON.stringify(collected);localStorage.ss_trades=JSON.stringify(trades);localStorage.ss_wishlist=JSON.stringify(wishlist);localStorage.ss_mastered=JSON.stringify(mastered);localStorage.ss_quest_claims=JSON.stringify(questClaims);localStorage.ss_quest_baselines_v2=JSON.stringify(questBaselines)}
 function toast(msg){let t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}t.textContent=msg;t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),2600)}
 function escapeHtml(s){return String(s??"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
-function spriteSlug(name){const isGold=name.startsWith("Gold "),isCheat=name.startsWith("Cheat Master "),isLootMaster=name.startsWith("Loot Master ");const base=name.replace(/^Gold |^Cheat Master |^Loot Master /,"");const slug=SPRITES[base]||base.toLowerCase().replaceAll(" ","");return isGold?`gold-${slug}`:isCheat?`cheatmaster-${slug}`:isLootMaster?`loot-master-${slug}`:slug}
+function spriteSlug(name){const isGold=name.startsWith("Gold "),isCheat=name.startsWith("Cheat Master "),isLootMaster=name.startsWith("Loot Master ");const base=name.replace(/^Gold |^Cheat Master |^Loot Master /,"");const slug=SPRITES[base]||base.toLowerCase().replaceAll(" ","");return isGold?`gold-${slug}`:isCheat?`cheatmaster-${slug}`:isLootMaster?`loot-hacker-${slug}`:slug}
 const SPRITE_VERSIONS={
   "killswitch":"jyamt3kpsuy","gold-killswitch":"l3imt3kpsuu","cheatmaster-killswitch":"llomt3kpsuu",
   "8bit":"n46mt3kpt0a","gold-8bit":"mbgmt3kpt0e","cheatmaster-8bit":"pp2mt3kpt0i",
@@ -177,7 +184,19 @@ const SPRITE_IMAGE_OVERRIDES={
   "overshield":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_L.webp",
   "gold-overshield":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_Gold_L.webp",
   "cheatmaster-overshield":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_Cheatmaster_L.webp",
-  "loot-master-crown":"https://dillyapp.gg/_next/image?dpl=dpl_C4LQUkZPT55ZQvUGejQXZ2JPq4WS&q=90&url=%2Fsprites%2Fcrown-loothacker.webp&w=512"
+  "loot-master-crown":"https://dillyapp.gg/_next/image?dpl=dpl_C4LQUkZPT55ZQvUGejQXZ2JPq4WS&q=90&url=%2Fsprites%2Fcrown-loothacker.webp&w=512",
+  "blinky":"https://api.spritetrading.com/sprites/blinky.webp?w=192",
+  "gold-blinky":"https://api.spritetrading.com/sprites/gold-blinky.webp?w=192",
+  "cheatmaster-blinky":"https://api.spritetrading.com/sprites/cheatmaster-blinky.webp?w=192",
+  "loot-hacker-blinky":"https://api.spritetrading.com/sprites/loot-hacker-blinky.webp?w=192",
+  "crash-bandicoot":"https://api.spritetrading.com/sprites/crash-bandicoot.webp?w=192",
+  "gold-crash-bandicoot":"https://api.spritetrading.com/sprites/gold-crash-bandicoot.webp?w=192",
+  "cheatmaster-crash-bandicoot":"https://api.spritetrading.com/sprites/cheatmaster-crash-bandicoot.webp?w=192",
+  "loot-hacker-crash-bandicoot":"https://api.spritetrading.com/sprites/loot-hacker-crash-bandicoot.webp?w=192",
+  "pond":"https://api.spritetrading.com/sprites/pond.webp?w=192",
+  "gold-pond":"https://api.spritetrading.com/sprites/gold-pond.webp?w=192",
+  "cheatmaster-pond":"https://api.spritetrading.com/sprites/cheatmaster-pond.webp?w=192",
+  "loot-hacker-pond":"https://api.spritetrading.com/sprites/loot-hacker-pond.webp?w=192"
 };
 function spriteIcon(name){const slug=spriteSlug(name),v=SPRITE_VERSIONS[slug];return SPRITE_IMAGE_OVERRIDES[slug]||`https://api.spritetrading.com/sprites/${slug}.webp${v?`?v=${v}&w=192`:`?w=192`}`}
 function imgTag(name,cls=""){return `<img class="${cls}" src="${spriteIcon(name)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.onerror=null;this.classList.add('spriteFallback');this.removeAttribute('src')">`}
@@ -249,7 +268,7 @@ function showTradeOffersV14(){const me=currentUserV14(),incoming=tradeOffersV14.
 function viewTrade(i){const t=trades[i];showModal(`<button class="close" onclick="closeModal()">×</button><label>TRADE POST</label><h2>${escapeHtml(t.user)}</h2><div class="chips"><span class="chip">${escapeHtml(t.tier||'Base')}</span></div><div class="field"><label>OFFERING</label><div class="tradeChips">${(t.offer||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('')}</div></div><div class="field"><label>LOOKING FOR</label><div class="tradeChips">${(t.want||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('')}</div></div><p class="sub">${escapeHtml(t.note||'Open to a fair trade')}</p>${t.user===currentUserV14()?'<div class="notice">This is your trade post.</div>':'<button class="btn primary" onclick="openOfferBuilderV14('+i+')">Send trade offer</button>'}`)}
 function openSpriteDetailV14(name){
  const base=name.replace(/^Gold |^Cheat Master |^Loot Master /,'');
- const variants=base==="Crown"?["Crown","Gold Crown","Cheat Master Crown","Loot Master Crown"]:[base,...(VARIANTABLE_NEW.includes(base)||!NEW_SPRITES.includes(base)?['Gold '+base,'Cheat Master '+base]:[])];
+ const variants=base==="Mega Man"?["Mega Man"]:[base,"Gold "+base,"Cheat Master "+base,"Loot Master "+base];
  const location=spriteLocation(name);
  showModal(`<button class="close" onclick="closeModal()">×</button><label>SPRITE DETAILS</label><div class="detailHero">${imgTag(base,'detailArt')}<div><h2>${escapeHtml(base)}</h2><p class="sub">${variants.filter(x=>collected.includes(x)).length} / ${variants.length} variants collected</p><button class="btn primary" onclick="toggleWishlist('${base}',event);openSpriteDetailV14('${base.replace(/'/g,"\'")}')">${wishlist.includes(base)?'Remove from wishlist':'Add to wishlist'}</button></div></div><div class="spriteFindBox"><b>📍 WHERE TO FIND</b><p>${escapeHtml(location)}</p><small>Location info based on current Fortnite Override Sprite tracking.</small></div><div class="detailVariants">${variants.map(v=>`<div class="detailVariant">${imgTag(v)}<b>${escapeHtml(v)}</b><small>${collected.includes(v)?'Collected':'Missing'} · ${mastered.includes(v)?'Mastered':'Not mastered'}</small></div>`).join('')}</div>`);
 }
