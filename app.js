@@ -1,26 +1,68 @@
 window.SPRITESWAP_DISCORD_INVITE="https://discord.gg/kS5Xf35Vf";
-const SPRITES={"Killswitch":"killswitch","8-Bit":"8bit","Adventure":"adventure","Crown":"crown","Jackrabbit":"jackrabbit","Jonesy":"jonesy","Klombo":"klombo","Shadow":"shadow","Sonic":"sonic","Storm Scout":"stormscout","Tails":"tails","Bush":"bush","Mega Man":"mega-man","Overshield":"overshield","Onigiri":"onigiri","X-Ray":"x-ray"};
-const SPRITE_NAMES=Object.keys(SPRITES);
-const NEW_SPRITES=["Mega Man","Overshield","Onigiri","X-Ray"];
-const VARIANTABLE_NEW=["Overshield","Onigiri","X-Ray"];
-const tiers={
- Base:SPRITE_NAMES,
- Gold:SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Gold "+x),
- "Cheat Master":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Cheat Master "+x)
+
+// Current Chapter 7 Season 4 Sprite roster: 25 families.
+// Sprite Trading currently indexes 145 variants: 25 Base + 24 each of Gold,
+// Cheat Master, Loot Hacker, Bounty Hunter and Trick or Treat.
+// Mega Man is the Base-only family in the current 145-variant catalog.
+const SPRITE_FAMILIES_LIST=[
+ "Jonesy","Adventure","Bush","Sonic","Tails","Shadow","8-Bit","Jackrabbit","Crown",
+ "Killswitch","Klombo","Mega Man","Overshield","Pond","X-Ray","Onigiri","Storm Scout",
+ "Blinky","Birthday","Crash Bandicoot","Morgana","Spooky Dash","Vampire","The Deer","Dumpster Dive"
+];
+const SPRITES={
+ "Killswitch":"killswitch","8-Bit":"8bit","Adventure":"adventure","Crown":"crown","Jackrabbit":"jackrabbit",
+ "Jonesy":"jonesy","Klombo":"klombo","Shadow":"shadow","Sonic":"sonic","Storm Scout":"stormscout","Tails":"tails",
+ "Bush":"bush","Mega Man":"mega-man","Overshield":"overshield","Onigiri":"onigiri","X-Ray":"x-ray",
+ "Pond":"pond","Crash Bandicoot":"crash-bandicoot","Blinky":"blinky","Birthday":"birthday","Morgana":"morgana",
+ "Spooky Dash":"spooky-dash","Vampire":"vampire","The Deer":"the-deer","Dumpster Dive":"dumpster-dive"
 };
-const ALL_SPRITES=[...tiers.Base,...tiers.Gold,...tiers["Cheat Master"]];
-const TOTAL_SPRITES=ALL_SPRITES.length; // 46 live variants in the current SpriteSwap catalog
-const SPRITE_FAMILIES=SPRITE_NAMES.length;
+const SPRITE_NAMES=SPRITE_FAMILIES_LIST.slice();
+const NEW_SPRITES=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];
+const VARIANTABLE_NEW=NEW_SPRITES.slice();
+const SPECIAL_TIERS=["Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];
+const tiers={
+ Base:SPRITE_NAMES.slice(),
+ Gold:SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Gold "+x),
+ "Cheat Master":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Cheat Master "+x),
+ "Loot Hacker":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Loot Hacker "+x),
+ "Bounty Hunter":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Bounty Hunter "+x),
+ "Trick or Treat":SPRITE_NAMES.filter(x=>x!=="Mega Man").map(x=>"Trick or Treat "+x)
+};
+const ALL_SPRITES=Object.values(tiers).flat();
+const TOTAL_SPRITES=ALL_SPRITES.length; // 145 indexed variants
+const SPRITE_FAMILIES=SPRITE_NAMES.length; // 25 families
+const OBTAINABLE_SPRITES=122;
 const NEW_THIS_WEEK=[
- {name:"X-Ray",type:"NEW",status:"LIVE NOW",image:"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_L.webp",note:"Design-A-Sprite winner by Avila215. Periodically marks nearby enemies."},
- {name:"Onigiri",type:"NEW",status:"LIVE NOW",image:"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerC_L.webp",note:"Design-A-Sprite winner by Enorull. Applies Overdrive after eating or drinking a consumable."},
- {name:"Mega Man",type:"NEW",status:"LIVE NOW",image:"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_ImprovedSlide_L.webp",note:"New Sprite. Reduces friction while sliding or swimming so you can slide farther as you level it up."},
- {name:"Overshield",type:"NEW",status:"LIVE NOW",image:"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_L.webp",note:"New Sprite. Grants Overshield, with the amount scaling with Sprite Level."}
+ {name:"Spooky Dash",type:"NEW",status:"LIVE NOW",image:"https://api.spritetrading.com/sprites/spooky-dash.webp?w=192",note:"New Fortnitemares Sprite. Airborne dash with charges that regenerate over time."},
+ {name:"Vampire",type:"NEW",status:"LIVE NOW",image:"https://api.spritetrading.com/sprites/vampire.webp?w=192",note:"New Fortnitemares Sprite. Damaging enemies restores health."},
+ {name:"The Deer",type:"NEW",status:"LIVE NOW",image:"https://api.spritetrading.com/sprites/the-deer.webp?w=192",note:"New Fortnitemares Sprite. Melee attacks deal increased damage."},
+ {name:"Dumpster Dive",type:"NEW",status:"LIVE NOW",image:"https://api.spritetrading.com/sprites/dumpster-dive.webp?w=192",note:"New Fortnitemares Sprite. Food provides extra healing and can appear from hiding props."}
 ];
 const UPCOMING=[
- {name:"Dumpster Dive",type:"UPCOMING",image:"https://pbs.twimg.com/media/HPH1muLWIAAbvWh.jpg",pos:"78% 73%",note:"Community-designed Sprite announced for a later mid-season update."},
- {name:"Honey",type:"UPCOMING",image:"https://pbs.twimg.com/media/HPH1muLWIAAbvWh.jpg",pos:"79% 52%",note:"Community-designed Sprite announced for a later mid-season update."},
- {name:"Pond",type:"UPCOMING",image:"https://pbs.twimg.com/media/HPH1muLWIAAbvWh.jpg",pos:"42% 22%",note:"Community-designed Sprite announced for a later mid-season update."}
+ {name:"Trick or Treat Jonesy",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-jonesy.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Sonic",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-sonic.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Tails",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-tails.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Shadow",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-shadow.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Killswitch",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-killswitch.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Klombo",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-klombo.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Overshield",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-overshield.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Pond",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-pond.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat 8-Bit",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-8bit.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Birthday",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-birthday.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Bush",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-bush.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Adventure",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-adventure.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Crown",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-crown.webp?w=192",note:"Trick or Treat variant — availability can change; check the live roster before trading."},
+ {name:"Trick or Treat Crash Bandicoot",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-crash-bandicoot.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Blinky",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-blinky.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Morgana",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-morgana.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Spooky Dash",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-spooky-dash.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Vampire",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-vampire.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat The Deer",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-the-deer.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Dumpster Dive",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-dumpster-dive.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat The Deer",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-the-deer.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Jonesy",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-jonesy.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Klombo",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-klombo.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Onigiri",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-onigiri.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."}
 ];
 const BACKGROUNDS={
  "Midnight":"linear-gradient(135deg,#070b10,#0d1320 55%,#111827)",
@@ -35,7 +77,7 @@ const QUESTS=[
  {id:"wish3",title:"Make a Wish",desc:"Add 3 sprites to your wishlist.",reward:"Cyan Grid",type:"wish",goal:3,kind:"evergreen"},
  {id:"master1",title:"Master Your Craft",desc:"Mark your first Sprite as mastered.",reward:"Lime Circuit",type:"master",goal:1,kind:"evergreen"},
  {id:"trader1",title:"First Swap",desc:"Post your first trade.",reward:"Aurora",type:"trade",goal:1,kind:"evergreen"},
- {id:"collector16",title:"Base Completion",desc:"Collect all 16 Base sprites.",reward:"Arcade",type:"base",goal:16,kind:"evergreen"}
+ {id:"collector16",title:"Base Completion",desc:"Collect all 25 Base sprites.",reward:"Arcade",type:"base",goal:25,kind:"evergreen"}
 ];
 const DAILY_QUESTS=[
  {title:"Daily Hunt",desc:"Collect 2 sprites.",reward:"Daily XP",type:"collect",goal:2},
@@ -51,11 +93,11 @@ const WEEKLY_QUESTS=[
  {title:"Weekly Master",desc:"Master 3 sprites.",reward:"Weekly XP",type:"master",goal:3},
  {title:"Weekly Completionist",desc:"Collect 12 sprites.",reward:"Weekly XP",type:"collect",goal:12}
 ];
-const SECRET_QUESTS=[
- {title:"The Hidden Swap",desc:"??? Find the hidden requirement.",reward:"Secret Badge",type:"master",goal:5,secret:true},
- {title:"Midnight Collector",desc:"??? Something is hiding in your collection.",reward:"Secret Badge",type:"collect",goal:10,secret:true},
- {title:"Secret Wishlist",desc:"??? The clue is somewhere on the site.",reward:"Secret Badge",type:"wish",goal:7,secret:true},
- {title:"The Monthly Trade",desc:"??? Complete the mystery trade challenge.",reward:"Secret Badge",type:"trade",goal:4,secret:true}
+const MONTHLY_QUESTS=[
+ {title:"Monthly Master",desc:"Master 5 sprites this month.",reward:"Monthly XP",type:"master",goal:5},
+ {title:"Monthly Collector",desc:"Collect 20 sprites this month.",reward:"Monthly XP",type:"collect",goal:20},
+ {title:"Monthly Wishlist",desc:"Build a wishlist with 10 sprites.",reward:"Monthly XP",type:"wish",goal:10},
+ {title:"Monthly Trader",desc:"Post 5 trades this month.",reward:"Monthly XP",type:"trade",goal:5}
 ];
 function utcDateKey(d=new Date()){return d.toISOString().slice(0,10)}
 function periodIndex(length,period){let n=0;for(let i=0;i<period.length;i++)n=(n*31+period.charCodeAt(i))%100000;return n%length}
@@ -66,11 +108,11 @@ function getActiveQuests(){
  const month=`${weekDate.getUTCFullYear()}-${String(weekDate.getUTCMonth()+1).padStart(2,"0")}`;
  const daily=[0,1,2].map((_,i)=>{const idx=(periodIndex(DAILY_QUESTS.length,day)+i)%DAILY_QUESTS.length;return {...DAILY_QUESTS[idx],id:`daily-${day}-${i}`,kind:"daily",period:day}});
  const weekly=[0,1].map((_,i)=>{const idx=(periodIndex(WEEKLY_QUESTS.length,String(week))+i)%WEEKLY_QUESTS.length;return {...WEEKLY_QUESTS[idx],id:`weekly-${week}-${i}`,kind:"weekly",period:String(week)}});
- const secretIdx=periodIndex(SECRET_QUESTS.length,month);
- const secret={...SECRET_QUESTS[secretIdx],id:`secret-${month}`,kind:"secret",period:month};
- return [...QUESTS,...daily,...weekly,secret];
+ const monthlyIdx=periodIndex(MONTHLY_QUESTS.length,month);
+ const monthly={...MONTHLY_QUESTS[monthlyIdx],id:`monthly-${month}`,kind:"monthly",period:month};
+ return [...QUESTS,...daily,...weekly,monthly];
 }
-function questPeriodText(q){return q.kind==="daily"?"RESETS DAILY":q.kind==="weekly"?"RESETS WEEKLY":q.kind==="secret"?"MONTHLY SECRET":""}
+function questPeriodText(q){return q.kind==="daily"?"RESETS DAILY":q.kind==="weekly"?"RESETS WEEKLY":q.kind==="monthly"?"RESETS MONTHLY":""}
 function readJSON(key,fallback){try{const v=JSON.parse(localStorage.getItem(key)||"");return v??fallback}catch{return fallback}}
 let collected=readJSON("ss_collected",[]); if(!Array.isArray(collected))collected=[];
 let trades=readJSON("ss_trades",[]); if(!Array.isArray(trades)||trades.some(t=>Array.isArray(t))){trades=[];localStorage.ss_trades="[]";}
@@ -103,21 +145,8 @@ function save(){localStorage.ss_collected=JSON.stringify(collected);localStorage
 function toast(msg){let t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}t.textContent=msg;t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),2600)}
 function escapeHtml(s){return String(s??"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
 function spriteSlug(name){const isGold=name.startsWith("Gold "),isCheat=name.startsWith("Cheat Master ");const base=name.replace(/^Gold |^Cheat Master /,"");const slug=SPRITES[base]||base.toLowerCase().replaceAll(" ","");return isGold?`gold-${slug}`:isCheat?`cheatmaster-${slug}`:slug}
-const SPRITE_VERSIONS={
-  "killswitch":"jyamt3kpsuy","gold-killswitch":"l3imt3kpsuu","cheatmaster-killswitch":"llomt3kpsuu",
-  "8bit":"n46mt3kpt0a","gold-8bit":"mbgmt3kpt0e","cheatmaster-8bit":"pp2mt3kpt0i",
-  "adventure":"nqgmt3kpswm","gold-adventure":"nk6mt3kpswm","cheatmaster-adventure":"ntgmt3kpswm",
-  "crown":"mm4mt3kpt0a","gold-crown":"p1gmt3kpt0a","cheatmaster-crown":"pmcmt3kpt16",
-  "jackrabbit":"kkimt3kpsqq","gold-jackrabbit":"knumt3kpsqq","cheatmaster-jackrabbit":"pqimt3kpsqq",
-  "jonesy":"jwcmt3kpswm","gold-jonesy":"k3imt3kpt0a","cheatmaster-jonesy":"kbomt3kpsyi",
-  "klombo":"pbmmt3kpswm","gold-klombo":"m6amt3kpsyi","cheatmaster-klombo":"qzimt3kpsyi",
-  "shadow":"m2amt3kpsqq","gold-shadow":"l7amt3kpsuu","cheatmaster-shadow":"p3gmt3kpsr2",
-  "sonic":"mdymt3kpsyi","gold-sonic":"kaumt3kpsyi","cheatmaster-sonic":"qfcmt3kpt0a",
-  "stormscout":"n9cmt3kpt1u","gold-stormscout":"ngsmt3kpt1y","cheatmaster-stormscout":"pdimt3kpt1q",
-  "tails":"o5ymt3kpsta","gold-tails":"nvymt3kpsuu","cheatmaster-tails":"rkgmt3kpsta",
-  "bush":"lewmt3kpsta","gold-bush":"luqmt3kpsta","cheatmaster-bush":"nn4mt3kpsuu"
-};
-const SPRITE_IMAGE_OVERRIDES={
+const SPRITE_VERSIONS={};
+const SPRITE_IMAGE_OVERRIDES={{
   "x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_L.webp",
   "gold-x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_Gold_L.webp",
   "cheatmaster-x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_Cheatmaster_L.webp",
@@ -129,43 +158,11 @@ const SPRITE_IMAGE_OVERRIDES={
   "gold-overshield":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_Gold_L.webp",
   "cheatmaster-overshield":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_Overshield_Cheatmaster_L.webp"
 };
-function spriteIcon(name){const slug=spriteSlug(name),v=SPRITE_VERSIONS[slug];return SPRITE_IMAGE_OVERRIDES[slug]||`https://api.spritetrading.com/sprites/${slug}.webp${v?`?v=${v}&w=192`:`?w=192`}`}
-function imgTag(name,cls=""){return `<img class="${cls}" src="${spriteIcon(name)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.onerror=null;this.classList.add('spriteFallback');this.removeAttribute('src')">`}
-function mini(){const el=document.getElementById("mini");if(el)el.innerHTML=SPRITE_NAMES.slice(0,5).map(n=>`<div>${imgTag(n)}</div>`).join("")}
-function progress(){const n=collected.length;document.querySelectorAll("[data-progress]").forEach(x=>x.textContent=`${n} / ${TOTAL_SPRITES}`);const bar=document.getElementById("bar");if(bar)bar.style.width=Math.min(100,n/TOTAL_SPRITES*100)+"%";const ab=document.getElementById("accountBar");if(ab)ab.style.width=Math.min(100,n/TOTAL_SPRITES*100)+"%";const ap=document.getElementById("accountProgress");if(ap)ap.textContent=`${n} / ${TOTAL_SPRITES}`;const pc=document.getElementById("profileCount");if(pc)pc.textContent=`${n} / ${TOTAL_SPRITES}`;const sc=document.getElementById("statCollection");if(sc)sc.textContent=`${n} / ${TOTAL_SPRITES}`}
-function isWish(n){return wishlist.includes(n)}
-function toggleWishlist(n,e){if(e)e.stopPropagation();if(isWish(n)){wishlist=wishlist.filter(x=>x!==n);toast(`${n} removed from wishlist.`)}else{wishlist=[...wishlist,n];addNotification("Wishlist updated",`${n} was added to your wishlist.`);toast(`${n} added to wishlist.`)}save();renderIndex();renderWishlist();renderQuests()}
-function masterPicker(){return `<div class="masterPicker">${ALL_SPRITES.map(n=>`<button type="button" class="masterPick ${mastered.includes(n)?"selected":""}" onclick="toggleMastered('${n.replace(/'/g,"\\'")}')">${imgTag(n)}<span>${mastered.includes(n)?"✓ Mastered":"Mark mastered"}</span><b>${escapeHtml(n)}</b></button>`).join("")}</div>`}
-function selectMasteredSprite(){showModal(`<button class="close" onclick="closeModal()">×</button><label>MASTERED SPRITES</label><h2>What have you mastered?</h2><p class="sub">You can master as many Sprites as you want. Pick your featured mastered Sprite below.</p>${masterPicker()}<div class="field"><label>FEATURED MASTERED SPRITE</label><select id="featuredMaster">${ALL_SPRITES.map(n=>`<option ${localStorage.ss_featured_master===n?"selected":""} value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")}<option value="">None</option></select></div><button class="btn primary" onclick="saveMasterSetup()">Save mastery</button>`)}
-function toggleMastered(n){mastered=mastered.includes(n)?mastered.filter(x=>x!==n):[...mastered,n];save();renderMastered();renderIndex();renderQuests()}
-function saveMasterSetup(){const f=document.getElementById("featuredMaster")?.value||"";if(f&&!mastered.includes(f))mastered=[...mastered,f];localStorage.ss_featured_master=f;save();if(f)addNotification("Mastered Sprite updated",`${f} is now your featured mastered Sprite.`);closeModal();renderMastered();renderQuests();toast("Mastery saved!")}
-function renderMastered(){const feature=localStorage.ss_featured_master||mastered[0]||"";document.querySelectorAll("[data-mastered-name]").forEach(x=>x.textContent=feature||"None selected");document.querySelectorAll("[data-mastered-art]").forEach(x=>x.innerHTML=feature?imgTag(feature):"<span>?</span>");document.querySelectorAll("[data-mastered-count]").forEach(x=>x.textContent=mastered.length);const g=document.getElementById("masteredGrid");if(g)g.innerHTML=mastered.map(n=>`<div class="masterMini">${imgTag(n)}<b>${escapeHtml(n)}</b><small>Mastered</small></div>`).join("")||'<div class="emptyPanel">No mastered Sprites yet. Choose one above.</div>';renderNotifications()}
-function renderSprites(t=currentTier,q=""){const el=document.getElementById("spriteGrid");if(!el)return;const query=q.toLowerCase();const list=tiers[t].filter(n=>!query||n.toLowerCase().includes(query));el.innerHTML=list.map(n=>`<div class="sprite ${collected.includes(n)?"collected":""}" onclick="collectSprite('${n.replace(/'/g,"\\'")}")"><div class="art">${imgTag(n)}</div><b>${escapeHtml(n)}</b><small>${collected.includes(n)?"Collected":"Not collected"} · ${mastered.includes(n)?"Mastered":"Not mastered"}</small><div class="spriteActions"><button class="miniAction ${isWish(n)?"active":""}" onclick="toggleWishlist('${n}',event)">♡ ${isWish(n)?"Wanted":"Wishlist"}</button><button class="miniAction ${mastered.includes(n)?"active master":""}" onclick="toggleMastered('${n}');event.stopPropagation()">★ ${mastered.includes(n)?"Mastered":"Master"}</button></div></div>`).join("")||'<div class="empty">No sprites match your search.</div>'}
-function collectSprite(n){const adding=!collected.includes(n);collected=adding?[...collected,n]:collected.filter(x=>x!==n);save();progress();renderSprites(currentTier);renderIndex();renderLeaderboard();renderQuests();if(adding){addNotification("Sprite collected",`${n} was added to your collection.`)}toast(adding?`Added ${n} to your collection.`:`Removed ${n} from your collection.`)}
-function spritePicker(selected=[],field="offer"){return `<div class="picker" data-picker="${field}">${ALL_SPRITES.map(n=>`<button type="button" class="pickSprite ${selected.includes(n)?"selected":""}" data-sprite="${n}" onclick="toggleTradeSprite(this,'${field}')">${imgTag(n)}<span>${escapeHtml(n)}</span></button>`).join("")}</div><div id="${field}Summary" class="tradeSelected">Nothing selected yet</div>`}
-function toggleTradeSprite(btn,field){btn.classList.toggle("selected");const picker=btn.closest('.picker');const chosen=[...picker.querySelectorAll('.pickSprite.selected')].map(x=>x.dataset.sprite);const out=document.getElementById(field+"Selected");if(out)out.value=chosen.join(", ");const summary=document.getElementById(field+"Summary");if(summary){summary.classList.toggle("hasItems",chosen.length>0);summary.innerHTML=chosen.length?`<b>${chosen.length}</b> selected · ${chosen.map(escapeHtml).join(", ")}`:"Nothing selected yet"}}
-function renderTrades(filter="all",q=""){const el=document.getElementById("tradeGrid");if(!el)return;const list=trades.filter(t=>(filter==="all"||t.tier===filter)&&(!q||JSON.stringify(t).toLowerCase().includes(q.toLowerCase())));el.innerHTML=list.map((t,i)=>`<div class="trade"><div><b>${escapeHtml(t.user)}</b><div class="chips"><span class="chip">${escapeHtml(t.tier)}</span><span class="chip">Offering: ${escapeHtml(t.offer.join(", "))}</span><span class="chip">Looking for: ${escapeHtml(t.want.join(", "))}</span></div><small>${escapeHtml(t.note||"Open to a fair trade")}</small></div><button class="btn" onclick="viewTrade(${i})">View</button></div>`).join("")||'<div class="empty">No community trades yet. Be the first to post one.</div>';const c=document.getElementById("openCount");if(c)c.textContent=trades.length;renderWishlistBoard()}
-function viewTrade(i){const t=trades[i];showModal(`<button class="close" onclick="closeModal()">×</button><label>TRADE POST</label><h2>${escapeHtml(t.user)}</h2><div class="chips"><span class="chip">${escapeHtml(t.tier)}</span></div><div class="field"><label>OFFERING</label><div class="tradeChips">${t.offer.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join("")}</div></div><div class="field"><label>LOOKING FOR</label><div class="tradeChips">${t.want.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join("")}</div></div><p class="sub">${escapeHtml(t.note||"")}</p><button class="btn primary" onclick="toast('Trade request saved locally.');closeModal()">Request trade</button>`)}
-function showModal(content){const overlay=document.getElementById("modalOverlay");if(!overlay)return;const isTradeBuilder=content.includes("tradeBuilder");overlay.innerHTML=`<div class="modal${isTradeBuilder?" tradeBuildModal":""}">${content}</div>`;overlay.classList.add("show");document.body.classList.add("modalOpen");}
-function closeModal(){const overlay=document.getElementById("modalOverlay");if(overlay){overlay.classList.remove("show");overlay.innerHTML="";}document.body.classList.remove("modalOpen");}
-function postTrade(){showModal(`<button class="close" onclick="closeModal()">×</button><label>NEW TRADE</label><h2>Build your trade</h2><p class="sub">Choose the Sprites you can give and the ones you want back.</p><div class="tradeBuilder"><div class="field"><label>YOU OFFER</label>${spritePicker([],"offer")}<input id="offerSelected" type="hidden"></div><div class="field"><label>YOU WANT</label>${spritePicker([],"want")}<input id="wantSelected" type="hidden"></div></div><div class="field"><label>MESSAGE <span class="mutedLabel">OPTIONAL</span></label><textarea id="desc" placeholder="Example: Looking for Gold Crown."></textarea></div><div class="tradeModalActions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="publishTrade()">Post trade</button></div>`)}
-function publishTrade(){const offer=(document.getElementById("offerSelected")?.value||"").split(", ").filter(Boolean),want=(document.getElementById("wantSelected")?.value||"").split(", ").filter(Boolean),d=document.getElementById("desc")?.value.trim()||"Open to a fair trade";if(!offer.length||!want.length){toast("Select at least one sprite on each side.");return}const user=localStorage.ss_name||"Guest Trader";trades.unshift({user,tier:"Base",offer,want,note:d,created:Date.now()});save();renderTrades();renderLeaderboard();renderQuests();addNotification("Trade posted",`${user} posted a new trade.`);closeModal();toast("Trade posted!")}
-function renderIndex(){const el=document.getElementById("indexGrid");if(!el)return;const q=(document.getElementById("spriteSearch")?.value||"").toLowerCase(),status=document.getElementById("statusFilter")?.value||"All",variant=document.getElementById("variantFilter")?.value||"All";let list=[];Object.entries(tiers).forEach(([t,a])=>a.forEach(n=>{if((variant==="All"||variant===t)&&(status==="All"||(status==="Collected"&&collected.includes(n))||(status==="Missing"&&!collected.includes(n)))&&(!q||n.toLowerCase().includes(q)||n.replace(/^(Gold |Cheat Master )/,"").toLowerCase().includes(q)))list.push([n,t])}));el.innerHTML=list.map(([n,t])=>`<div class="sprite ${collected.includes(n)?"collected":""}"><div class="art">${imgTag(n)}</div><b>${escapeHtml(n)}</b><small>${t} · ${collected.includes(n)?"Collected":"Missing"}</small><div class="spriteActions"><button class="miniAction ${isWish(n)?"active":""}" onclick="toggleWishlist('${n}',event)">♡ ${isWish(n)?"Wanted":"Wishlist"}</button><button class="miniAction ${mastered.includes(n)?"active master":""}" onclick="toggleMastered('${n}');event.stopPropagation()">★ ${mastered.includes(n)?"Mastered":"Master"}</button><button class="miniAction" onclick="collectSprite('${n.replace(/'/g,"\\'")}')">${collected.includes(n)?"✓ Collected":"＋ Collect"}</button></div></div>`).join("")||'<div class="empty">No sprites match those filters.</div>';const shown=document.getElementById("indexShown");if(shown)shown.textContent=list.length;const m=document.getElementById("masteredShown");if(m)m.textContent=mastered.length}
-function renderWishlist(){const el=document.getElementById("wishlistGrid");if(!el)return;el.innerHTML=wishlist.map(n=>`<div class="wishCard">${imgTag(n)}<div><b>${escapeHtml(n)}</b><small>Wanted by ${escapeHtml(localStorage.ss_name||"Guest Trader")}</small></div><button class="miniAction active" onclick="toggleWishlist('${n}')">Remove</button></div>`).join("")||'<div class="emptyPanel">Your wishlist is empty. Use the Wishlist button on any Sprite.</div>';const c=document.getElementById("wishlistCount");if(c)c.textContent=wishlist.length}
-function renderWishlistBoard(){const el=document.getElementById("wishlistBoard");if(!el)return;const rows=trades.flatMap(t=>(t.want||[]).map(n=>({n,user:t.user})));const grouped={};rows.forEach(r=>(grouped[r.n]??=[]).push(r.user));el.innerHTML=Object.entries(grouped).map(([n,users])=>`<div class="wishBoardRow">${imgTag(n)}<div><b>${escapeHtml(n)}</b><small>${users.length} trader${users.length===1?"":"s"} looking for it · ${users.slice(0,3).map(escapeHtml).join(", ")}</small></div></div>`).join("")||'<div class="emptyPanel">No public wants yet. Trade posts will appear here.</div>'}
-function questProgress(q){switch(q.type){case"collect":return Math.min(collected.length,q.goal);case"wish":return Math.min(wishlist.length,q.goal);case"master":return Math.min(mastered.length,q.goal);case"trade":return Math.min(trades.filter(t=>t.user===(localStorage.ss_name||"Guest Trader")).length,q.goal);case"base":return Math.min(collected.filter(n=>tiers.Base.includes(n)).length,q.goal);default:return 0}}
-function claimQuest(id){const quests=getActiveQuests(),q=quests.find(x=>x.id===id);if(!q||questClaims.includes(id)||questProgress(q)<q.goal)return;questClaims=[...questClaims,id];save();addNotification("Quest complete",`${q.title} unlocked ${q.reward}.`);closeModal();renderQuests();applyBackground();toast(`${q.title} complete! ${q.reward} unlocked.`)}
-function renderQuests(){const el=document.getElementById("questGrid");if(!el)return;const quests=getActiveQuests();const groups={daily:[],weekly:[],secret:[],evergreen:[]};quests.forEach(q=>(groups[q.kind||"evergreen"]||groups.evergreen).push(q));const renderGroup=(title,sub,list)=>`<div class="questSection"><div class="questSectionHead"><div><label>${title}</label><p>${sub}</p></div></div><div class="questGrid questGridLarge">${list.map(q=>{const p=questProgress(q),done=p>=q.goal,claimed=questClaims.includes(q.id),secret=q.secret&&!done;return `<article class="questCard ${done?"complete":""} ${q.kind||""}"><div class="questTop"><span>${q.kind==="secret"?"SECRET QUEST":"QUEST"}</span><b>${claimed?"CLAIMED":done?"READY":q.kind==="secret"?"HIDDEN":"IN PROGRESS"}</b></div><h3>${secret?"???":escapeHtml(q.title)}</h3><p>${secret?"This month's secret quest is still hidden. Keep playing to discover it.":escapeHtml(q.desc)}</p><div class="questBar"><i style="width:${Math.round(p/q.goal*100)}%"></i></div><div class="questBottom"><small>${p} / ${q.goal}</small><span>🎁 ${secret?"Mystery Reward":escapeHtml(q.reward)}</span></div>${done&&!claimed?`<button class="btn primary" onclick="claimQuest('${q.id}')">Claim reward</button>`:""}<small class="questReset">${questPeriodText(q)}</small></article>`}).join("")}</div></div>`;el.innerHTML=renderGroup("DAILY QUESTS","Fresh quests every day.",groups.daily)+renderGroup("WEEKLY QUESTS","Fresh quests every week.",groups.weekly)+renderGroup("SECRET QUEST","A new mystery quest every month.",groups.secret)+renderGroup("CORE QUESTS","Permanent SpriteSwap goals.",groups.evergreen)}
-function showBackgroundPicker(){const current=localStorage.ss_background||"Midnight";showModal(`<button class="close" onclick="closeModal()">×</button><label>PROFILE CUSTOMIZATION</label><h2>Choose your background</h2><p class="sub">Unlocked backgrounds can be used across your profile.</p><div class="bgPicker">${Object.entries(BACKGROUNDS).map(([n,v])=>{const unlocked=n==="Midnight"||questClaims.some(id=>QUESTS.find(q=>q.id===id)?.reward===n);return `<button class="bgChoice ${current===n?"selected":""} ${unlocked?"":"locked"}" style="background:${v}" ${unlocked?`onclick="setBackground('${n}')"`:"disabled"}><b>${escapeHtml(n)}</b><small>${unlocked?"Unlocked":"Complete a quest"}</small></button>`}).join("")}</div><div class="field"><label>CUSTOM BACKGROUND IMAGE</label><input id="bgUpload" type="file" accept="image/*"><button class="btn" onclick="uploadBackground()">Upload background</button></div>`)}
-function setBackground(name){if(!BACKGROUNDS[name])return;localStorage.ss_background=name;applyBackground();closeModal();toast(`${name} background applied.`)}
-function uploadBackground(){const f=document.getElementById("bgUpload")?.files?.[0];if(!f)return toast("Choose an image first.");if(f.size>2*1024*1024)return toast("Please use an image under 2 MB.");const r=new FileReader();r.onload=()=>{localStorage.ss_custom_bg=r.result;localStorage.ss_background="custom";applyBackground();closeModal();toast("Custom background saved!")};r.readAsDataURL(f)}
-function applyBackground(){const custom=localStorage.ss_custom_bg;const name=localStorage.ss_background||"Midnight";document.body.style.backgroundImage=custom&&name==="custom"?`linear-gradient(rgba(7,11,16,.65),rgba(7,11,16,.82)),url(${custom})`:BACKGROUNDS[name]||BACKGROUNDS.Midnight}
-function renderOnline(){
-  const key="ss_presence_v2",id=localStorage.ss_presence_id||(localStorage.ss_presence_id=Math.random().toString(36).slice(2)),name=localStorage.ss_name||"Guest Trader";
-  const draw=()=>{const p=readJSON(key,{}),t=Date.now();Object.keys(p).forEach(k=>{if(t-p[k].last>15000)delete p[k]});p[id]={name,last:t};localStorage[key]=JSON.stringify(p);const fresh=Object.entries(p).filter(([,v])=>t-v.last<15000);const out=document.getElementById("onlinePlayers"),count=document.getElementById("onlineCount");if(count)count.textContent=fresh.length;if(out)out.innerHTML=fresh.slice(0,20).map(([,v])=>`<span class="onlineUser"><i></i>${escapeHtml(v.name)}${v.name===name?' <b class="youBadge">YOU</b>':''}</span>`).join("")||'<span class="emptyInline">Nobody is online right now.</span>';if(window.__presenceChannel)window.__presenceChannel.postMessage({type:"heartbeat",id})};
-  draw();window.__presenceTimer&&clearInterval(window.__presenceTimer);window.__presenceTimer=setInterval(draw,5000);
-  window.addEventListener("storage",e=>{if(e.key===key)draw()});
-  if("BroadcastChannel" in window){window.__presenceChannel=window.__presenceChannel||new BroadcastChannel("spriteswap-presence");window.__presenceChannel.onmessage=()=>draw();window.__presenceChannel.postMessage({type:"heartbeat",id})}
+function spriteIcon(name){
+ const slug=spriteSlug(name);
+ const mapped=SPRITE_IMAGE_OVERRIDES[slug];
+ if(mapped)return mapped;
+ return `https://api.spritetrading.com/sprites/${slug}.webp?w=192`;
 }
 function editProfile(){showModal(`<button class="close" onclick="closeModal()">×</button><label>PROFILE</label><h2>Edit profile</h2><div class="field"><label>Display name</label><input id="newName" value="${escapeHtml(localStorage.ss_name||"Guest Trader")}"></div><button class="btn primary" onclick="saveName()">Save</button>`)}
 function saveName(){const n=document.getElementById("newName")?.value.trim()||"Guest Trader";localStorage.ss_name=n;setUser();renderOnline();closeModal();toast("Profile name updated.")}
