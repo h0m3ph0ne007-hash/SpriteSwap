@@ -157,7 +157,7 @@ function spriteSlug(name){
  return prefix+slug;
 }
 const SPRITE_VERSIONS={};
-const SPRITE_IMAGE_OVERRIDES={{
+const SPRITE_IMAGE_OVERRIDES={
   "x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_L.webp",
   "gold-x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_Gold_L.webp",
   "cheatmaster-x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_Cheatmaster_L.webp",
