@@ -181,6 +181,24 @@ function setUser(){const n=localStorage.ss_name||"Guest Trader";document.querySe
 function renderLeaderboard(){const el=document.getElementById("leaders");if(!el)return;const me=localStorage.ss_name||"Guest Trader";const rows=trades.map(t=>({n:t.user,tr:trades.filter(x=>x.user===t.user).length,p:trades.filter(x=>x.user===t.user).length*20})).filter((x,i,a)=>a.findIndex(y=>y.n===x.n)===i);if(me!=="Guest Trader"&&!rows.some(x=>x.n===me))rows.push({n:me,tr:trades.filter(t=>t.user===me).length,p:collected.length*200});rows.sort((a,b)=>b.p-a.p);el.innerHTML=rows.length?rows.map((x,i)=>`<div class="leader leaderRow"><span class="rank">${i+1}</span><b>${escapeHtml(x.n)}${x.n===me&&me!=="Guest Trader"?'<span class="youBadge">YOU</span>':''}</b><span>${x.tr} trades</span><b>${x.p.toLocaleString()} pts</b></div>`).join(""):'<div class="empty">No community rankings yet. Post a trade to appear here.</div>'}
 function renderUpdates(){const week=document.getElementById("newThisWeekGrid");if(week)week.innerHTML=NEW_THIS_WEEK.map(updateCard).join("");const upcoming=document.getElementById("upcomingGrid");if(upcoming)upcoming.innerHTML=UPCOMING.map(updateCard).join("")}
 function updateCard(x){return `<article class="updateCard"><div class="updateArt" style="background-image:url('${x.image}');background-position:${x.pos||"center"};"></div><div class="updateBody"><div class="updateMeta"><span>${x.type}</span><b>${x.status||"UPCOMING"}</b></div><h3>${escapeHtml(x.name)}</h3><p>${escapeHtml(x.note)}</p><a class="btn" href="index-page.html">View index</a></div></article>`}
+function renderIndex(){
+ const el=document.getElementById("indexGrid"); if(!el)return;
+ const raw=(document.getElementById("spriteSearch")?.value||"").trim().toLowerCase();
+ const terms=raw.split(/\s+/).filter(Boolean);
+ const status=document.getElementById("statusFilter")?.value||"All";
+ const variant=document.getElementById("variantFilter")?.value||"All";
+ let list=[];
+ Object.entries(tiers).forEach(([t,a])=>a.forEach(n=>{
+   const hay=(n+" "+t+" "+n.replace(/^(Gold |Cheat Master |Loot Hacker |Bounty Hunter |Trick or Treat )/,"")).toLowerCase();
+   const aliases={normal:"base",cheat:"cheat master",master:"cheat master",cm:"cheat master"};
+   const matches=terms.every(x=>hay.includes(aliases[x]||x));
+   const st=status==="All"||(status==="Collected"&&collected.includes(n))||(status==="Missing"&&!collected.includes(n))||(status==="Mastered"&&mastered.includes(n));
+   const vr=variant==="All"||t===variant;
+   if(matches&&st&&vr)list.push([n,t]);
+ }));
+ el.innerHTML=list.map(([n,t])=>`<div class="sprite ${collected.includes(n)?"collected":""}"><div class="art">${imgTag(n)}</div><b>${escapeHtml(n)}</b><small>${t} · ${collected.includes(n)?"Collected":"Missing"}${mastered.includes(n)?" · Mastered":""}</small><div class="spriteActions"><button class="miniAction ${isWish(n)?"active":""}" onclick="toggleWishlist('${n.replace(/'/g,"\\'")}',event)">♡ ${isWish(n)?"Wanted":"Wishlist"}</button><button class="miniAction ${mastered.includes(n)?"active master":""}" onclick="toggleMastered('${n.replace(/'/g,"\\'")}');event.stopPropagation()">★ ${mastered.includes(n)?"Mastered":"Master"}</button><button class="miniAction" onclick="collectSprite('${n.replace(/'/g,"\\'")}');event.stopPropagation()">${collected.includes(n)?"✓ Collected":"＋ Collect"}</button></div></div>`).join("")||'<div class="empty">No sprites match those filters.</div>';
+ const shown=document.getElementById("indexShown"); if(shown)shown.textContent=String(list.length);
+}
 function init(){const auth=document.getElementById("auth");if(auth&&!auth.getAttribute("href"))auth.onclick=login;const discord=document.getElementById("discordLink");if(discord)discord.href=window.SPRITESWAP_DISCORD_INVITE;const filterBox=document.getElementById("filters");if(filterBox){filterBox.innerHTML=["all","Base","Gold","Cheat Master"].map(x=>`<button class="${x==="all"?"active":""}" data-f="${x}">${x==="all"?"All":x}</button>`).join("");filterBox.querySelectorAll("button").forEach(b=>b.onclick=()=>{filterBox.querySelectorAll("button").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderTrades(b.dataset.f,document.getElementById("tradeSearch")?.value||"")})}
 const tabs=document.getElementById("tabs");if(tabs){tabs.innerHTML=Object.keys(tiers).map((x,i)=>`<button class="${i===0?"active":""}" data-t="${x}">${x} · ${tiers[x].length}</button>`).join("");tabs.querySelectorAll("button").forEach(b=>b.onclick=()=>{tabs.querySelectorAll("button").forEach(x=>x.classList.remove("active"));b.classList.add("active");currentTier=b.dataset.t;renderSprites()})}
 document.querySelectorAll("nav a").forEach(a=>{try{const href=a.getAttribute("href"),path=location.pathname.split("/").pop()||"index.html";if(href===path||(path===""&&href==="index.html"))a.classList.add("active")}catch{}});
