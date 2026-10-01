@@ -40,29 +40,28 @@ const NEW_THIS_WEEK=[
 ];
 const UPCOMING=[
  {name:"Trick or Treat Jonesy",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-jonesy.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Adventure",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-adventure.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Bush",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-bush.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Sonic",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-sonic.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Tails",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-tails.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Shadow",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-shadow.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat 8-Bit",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-8bit.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Jackrabbit",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-jackrabbit.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Killswitch",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-killswitch.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Klombo",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-klombo.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Overshield",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-overshield.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Pond",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-pond.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat 8-Bit",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-8bit.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Birthday",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-birthday.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Bush",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-bush.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Adventure",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-adventure.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Crown",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-crown.webp?w=192",note:"Trick or Treat variant — availability can change; check the live roster before trading."},
- {name:"Trick or Treat Crash Bandicoot",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-crash-bandicoot.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat X-Ray",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-x-ray.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Onigiri",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-onigiri.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Storm Scout",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-stormscout.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Blinky",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-blinky.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Birthday",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-birthday.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
+ {name:"Trick or Treat Crash Bandicoot",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-crash-bandicoot.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Morgana",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-morgana.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Spooky Dash",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-spooky-dash.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat Vampire",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-vampire.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
  {name:"Trick or Treat The Deer",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-the-deer.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Dumpster Dive",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-dumpster-dive.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat The Deer",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-the-deer.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Jonesy",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-jonesy.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Klombo",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-klombo.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."},
- {name:"Trick or Treat Onigiri",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-onigiri.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."}
+ {name:"Trick or Treat Dumpster Dive",type:"UPCOMING",image:"https://api.spritetrading.com/sprites/trick-or-treat-dumpster-dive.webp?w=192",note:"Trick or Treat variant — indexed, but not currently obtainable."}
 ];
 const BACKGROUNDS={
  "Midnight":"linear-gradient(135deg,#070b10,#0d1320 55%,#111827)",
@@ -144,7 +143,19 @@ function markNotificationsRead(){const a=notifications().map(x=>({...x,read:true
 function save(){localStorage.ss_collected=JSON.stringify(collected);localStorage.ss_trades=JSON.stringify(trades);localStorage.ss_wishlist=JSON.stringify(wishlist);localStorage.ss_mastered=JSON.stringify(mastered);localStorage.ss_quest_claims=JSON.stringify(questClaims)}
 function toast(msg){let t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}t.textContent=msg;t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),2600)}
 function escapeHtml(s){return String(s??"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
-function spriteSlug(name){const isGold=name.startsWith("Gold "),isCheat=name.startsWith("Cheat Master ");const base=name.replace(/^Gold |^Cheat Master /,"");const slug=SPRITES[base]||base.toLowerCase().replaceAll(" ","");return isGold?`gold-${slug}`:isCheat?`cheatmaster-${slug}`:slug}
+function spriteSlug(name){
+ const prefixes=[
+  ["Trick or Treat ","trick-or-treat-"],
+  ["Bounty Hunter ","bounty-hunter-"],
+  ["Loot Hacker ","loot-hacker-"],
+  ["Cheat Master ","cheatmaster-"],
+  ["Gold ","gold-"]
+ ];
+ let base=name, prefix="";
+ for(const pair of prefixes){if(name.startsWith(pair[0])){base=name.slice(pair[0].length);prefix=pair[1];break}}
+ const slug=SPRITES[base]||base.toLowerCase().replaceAll(" ","-");
+ return prefix+slug;
+}
 const SPRITE_VERSIONS={};
 const SPRITE_IMAGE_OVERRIDES={{
   "x-ray":"https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_WinnerB_L.webp",
