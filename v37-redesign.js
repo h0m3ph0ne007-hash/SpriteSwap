@@ -62,13 +62,17 @@
       }
     });
   }
+  function loadV39(){
+    if(document.querySelector('script[data-ss-v39]'))return;
+    const s=document.createElement('script');s.src='v39-vibrant.js';s.dataset.ssV39='1';s.defer=true;document.head.appendChild(s);
+  }
   function cacheBustSW(){
     if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('sw.js').catch(()=>{});
+      navigator.serviceWorker.register('sw.js?v=39',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
     }
   }
   document.addEventListener('DOMContentLoaded',()=>{
-    setupNav();setupDiscord();hardenImages();fixBrokenInternalLinks();addEscape();cacheBustSW();
-    document.documentElement.dataset.ssVersion='37';
+    setupNav();setupDiscord();hardenImages();fixBrokenInternalLinks();addEscape();loadV39();cacheBustSW();
+    document.documentElement.dataset.ssVersion='39';
   });
 })();
