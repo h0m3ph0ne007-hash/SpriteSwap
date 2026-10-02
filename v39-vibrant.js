@@ -1,6 +1,10 @@
 /* SpriteSwap V39 — visual refresh + logo + index resilience */
 (function(){
   "use strict";
+  function ensureImgTag(){
+    if(typeof window.imgTag==="function" || typeof window.spriteIcon!=="function")return;
+    window.imgTag=function(name,cls=""){const src=window.spriteIcon(name);return '<img class="'+(cls||'')+'" src="'+src+'" alt="'+String(name).replace(/[&<>\\\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\\\"":"&quot;","'":"&#39;"}[m]))+'" loading="lazy" decoding="async">'};
+  }
   function loadCSS(){
     if(document.querySelector('link[data-ss-v39]'))return;
     const l=document.createElement("link");
@@ -21,7 +25,7 @@
     if(shown&&!shown.textContent.trim())shown.textContent=total;
   }
   function upgrade(){
-    loadCSS();refreshLogo();fixIndexStats();
+    ensureImgTag();loadCSS();refreshLogo();fixIndexStats();
     document.documentElement.dataset.ssVersion="39";
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",upgrade);
