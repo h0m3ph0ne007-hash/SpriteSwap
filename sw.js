@@ -1,6 +1,7 @@
-const CACHE='spriteswap-v39-vibrant';
-const ASSETS=['index.html','index-page.html','trades.html','new.html','upcoming.html','leaderboard.html','quests.html','wishlist.html','profile.html','account.html','rules.html','community.html','about.html','report.html','style.css','v39-vibrant.css','v39-vibrant.js','app.js','auth.js','v37-redesign.js','v34-fortnitemares.js','manifest.json','spriteswap-logo.png','spriteswap-icon.png','icon-192.png','icon-512.png'];
+const CACHE='spriteswap-v40-final';
+const ASSETS=['index.html','index-page.html','trades.html','new.html','upcoming.html','leaderboard.html','quests.html','wishlist.html','profile.html','account.html','rules.html','community.html','about.html','report.html','style.css','v40-vibrant.css','v40-vibrant.js','app.js','auth.js','v37-redesign.js','v34-fortnitemares.js','manifest.json','spriteswap-logo.png','spriteswap-icon.png','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('install',e=>{e.waitUntil(self.skipWaiting())});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('message',e=>{if(e.data?.type==='SHOW_NOTIFICATION'){self.registration.showNotification(e.data.title||'SpriteSwap',{body:e.data.body||'',icon:'spriteswap-icon.png',badge:'spriteswap-icon.png',tag:e.data.tag||'spriteswap'})}});
 self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const c of list){if('focus' in c)return c.focus()}if(clients.openWindow)return clients.openWindow('index.html')}))});
