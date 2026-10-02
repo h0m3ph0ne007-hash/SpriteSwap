@@ -175,6 +175,7 @@ function spriteIcon(name){
  if(mapped)return mapped;
  return `https://api.spritetrading.com/sprites/${slug}.webp?w=192`;
 }
+function imgTag(name,cls=""){const src=spriteIcon(name);return '<img class="'+(cls||'')+'" src="'+src+'" alt="'+escapeHtml(name)+'" loading="lazy" decoding="async">'}
 function editProfile(){showModal(`<button class="close" onclick="closeModal()">×</button><label>PROFILE</label><h2>Edit profile</h2><div class="field"><label>Display name</label><input id="newName" value="${escapeHtml(localStorage.ss_name||"Guest Trader")}"></div><button class="btn primary" onclick="saveName()">Save</button>`)}
 function saveName(){const n=document.getElementById("newName")?.value.trim()||"Guest Trader";localStorage.ss_name=n;setUser();renderOnline();closeModal();toast("Profile name updated.")}
 function setUser(){const n=localStorage.ss_name||"Guest Trader";document.querySelectorAll("#name").forEach(x=>x.textContent=n);const auth=document.getElementById("auth");if(auth)auth.textContent=n==="Guest Trader"?"Sign in":n;const st=document.getElementById("statTrades");if(st)st.textContent=trades.filter(t=>t.user===n).length;const ph=localStorage.ss_avatar;document.querySelectorAll("#avatar,#profileAvatar,#profileBigAvatar,#accountAvatar").forEach(av=>{av.innerHTML=ph?`<img class="profilePhoto" src="${ph}" alt="Profile picture">`:escapeHtml(n[0]?.toUpperCase()||"S")})}
