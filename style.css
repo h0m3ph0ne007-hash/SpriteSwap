@@ -590,3 +590,79 @@ header a.logo:not(:has(.ssLogoMark)){display:flex;align-items:center;gap:9px}
 header a.logo:not(:has(.ssLogoMark)) img{display:none}
 header a.logo:not(:has(.ssLogoMark))::before{content:"S";width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:20px;font-weight:1000;font-style:italic;color:#fff;background:linear-gradient(135deg,#32ddff,#8b6cff 55%,#c05cff);box-shadow:0 0 22px rgba(139,108,255,.4),inset 0 1px rgba(255,255,255,.4)}
 header a.logo:not(:has(.ssLogoMark))::after{content:"SPRITESWAP";font-size:14px;font-weight:950;letter-spacing:1.15px;color:#f7f9ff}
+
+
+/* SpriteSwap V40 — final vibrant trading-hub layer */
+:root{
+ --ss40-bg:#050711;--ss40-panel:#0b1020;--ss40-panel2:#10182b;
+ --ss40-purple:#9a63ff;--ss40-pink:#e35cff;--ss40-cyan:#27e5ff;--ss40-blue:#4f8cff;
+ --ss40-text:#f8f9ff;--ss40-muted:#8f9bb0;--ss40-line:#263754;
+}
+html,body{background:var(--ss40-bg)!important;color:var(--ss40-text)}
+body{
+ background:
+ radial-gradient(900px 500px at 5% -5%,rgba(154,99,255,.24),transparent 62%),
+ radial-gradient(760px 460px at 100% 8%,rgba(39,229,255,.16),transparent 62%),
+ linear-gradient(180deg,#070916 0%,#060914 48%,#04060d 100%)!important;
+}
+header{
+ height:68px!important;
+ background:rgba(4,7,15,.94)!important;
+ border-bottom:1px solid rgba(65,87,123,.55)!important;
+ box-shadow:0 8px 36px rgba(0,0,0,.38)!important;
+}
+header:after{
+ content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:2px!important;
+ background:linear-gradient(90deg,transparent,var(--ss40-cyan),var(--ss40-purple),var(--ss40-pink),transparent)!important;
+ opacity:.85!important;
+}
+.logo{gap:10px!important;min-width:185px!important}
+.logo img{display:none!important}
+.logo:before{
+ content:"S"!important;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+ font-size:21px;font-weight:1000;font-style:italic;color:white;
+ background:linear-gradient(135deg,var(--ss40-cyan),var(--ss40-purple) 58%,var(--ss40-pink));
+ box-shadow:0 0 25px rgba(154,99,255,.45),inset 0 1px rgba(255,255,255,.45);
+}
+.logo:after{content:"SPRITE" "SWAP"!important;color:#fff;font-size:14px;font-weight:950;letter-spacing:1.1px}
+nav{gap:4px!important}
+nav a{padding:23px 10px!important;border-radius:8px!important;color:#a5afc1!important}
+nav a:hover{color:#fff!important;background:rgba(154,99,255,.10)!important}
+nav a.active{color:#fff!important;background:linear-gradient(180deg,rgba(154,99,255,.22),rgba(154,99,255,.06))!important;box-shadow:inset 0 0 0 1px rgba(154,99,255,.3),0 0 18px rgba(154,99,255,.1)!important}
+nav a:after{background:linear-gradient(90deg,var(--ss40-cyan),var(--ss40-pink))!important}
+.page,.section{max-width:1280px!important}
+.heroSmall{
+ margin-top:12px!important;padding:54px 30px 28px!important;border:1px solid #2a3d5d!important;
+ border-radius:18px!important;background:linear-gradient(135deg,rgba(14,23,40,.97),rgba(8,13,25,.97))!important;
+ box-shadow:0 25px 80px rgba(0,0,0,.3),0 0 55px rgba(154,99,255,.08)!important;
+}
+.heroSmall:before{display:none!important}
+.heroSmall h1{font-size:clamp(48px,6vw,76px)!important;letter-spacing:-4px!important}
+.heroSmall p{max-width:920px!important;color:#aab5c8!important}
+.indexTools{grid-template-columns:minmax(250px,1.7fr) repeat(2,minmax(170px,.7fr))!important}
+.indexTools input,.indexTools select{height:46px!important;background:#070d18!important;border-color:#304563!important}
+.indexTools input:focus,.indexTools select:focus{border-color:var(--ss40-cyan)!important;box-shadow:0 0 0 3px rgba(39,229,255,.09),0 0 25px rgba(39,229,255,.1)!important}
+.indexStats b{background:linear-gradient(145deg,#142039,#0a1220)!important;border-color:#344b6b!important}
+.section{padding-top:30px!important}
+.spriteGrid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:14px!important}
+.sprite{
+ background:linear-gradient(155deg,#101a2b,#080e19)!important;
+ border:1px solid #29405f!important;border-radius:13px!important;padding:11px!important;
+ box-shadow:0 13px 35px rgba(0,0,0,.25)!important;
+}
+.sprite:hover{border-color:var(--ss40-cyan)!important;box-shadow:0 18px 45px rgba(0,0,0,.38),0 0 25px rgba(39,229,255,.12)!important}
+.art{
+ height:154px!important;background:
+ radial-gradient(circle at 50% 35%,rgba(39,229,255,.12),transparent 30%),
+ radial-gradient(circle at 50% 70%,rgba(154,99,255,.2),transparent 68%),#060c17!important;
+ border-color:#2c4363!important;
+}
+.art img{width:132px!important;height:132px!important}
+.spriteActions{gap:6px!important}
+.miniAction{background:#08111d!important;border-color:#29415f!important;color:#99a8bd!important}
+.miniAction:hover{border-color:var(--ss40-cyan)!important;color:#fff!important}
+.primary{background:linear-gradient(135deg,var(--ss40-purple),var(--ss40-pink))!important;border:0!important;box-shadow:0 10px 30px rgba(154,99,255,.3)!important}
+footer{background:#050812!important;border-top:1px solid #223754!important}
+@media(max-width:1050px){.spriteGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:850px){.indexTools{grid-template-columns:1fr!important}.spriteGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:560px){.spriteGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
