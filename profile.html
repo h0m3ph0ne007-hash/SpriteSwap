@@ -26,4 +26,4 @@ const th=document.getElementById('tradeHistory');th.innerHTML=own.slice(0,8).map
 }
 const photoInput=document.getElementById('profilePhotoInput');photoInput?.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(f.size>3*1024*1024){toast('Please choose an image under 3 MB.');return}const r=new FileReader();r.onload=()=>{localStorage.ss_avatar=r.result;refreshProfilePage();toast('Profile picture updated!')};r.readAsDataURL(f)});
 refreshProfilePage();
-</script><script src="v20-features.js"></script></body></html>
+</script><script src="v20-features.js"></script><script src="v37-redesign.js"></script></body></html>
