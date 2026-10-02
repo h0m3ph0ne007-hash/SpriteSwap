@@ -305,3 +305,19 @@ img{max-width:100%}img[src*="api.spritetrading.com"]{background:transparent}
 @media(max-width:1050px){nav a{padding-left:7px;padding-right:7px}.spriteGrid{grid-template-columns:repeat(5,minmax(0,1fr))}.hero{grid-template-columns:1fr .72fr}}
 @media(max-width:850px){header{height:60px;padding:0 14px}.logo{min-width:0}.logo:after{display:none}.ssMobileMenu{display:block}header nav{display:none}.ssMobileNav{position:fixed;left:12px;right:12px;top:68px;display:none;flex-direction:column;padding:8px;background:#0c1116;border:1px solid #28333c;border-radius:14px;box-shadow:0 25px 60px #000b;z-index:100}.ssMobileNav.open{display:flex}.ssMobileNav a{padding:12px;border-radius:9px}.hero{padding:55px 18px 38px}.hero h1{font-size:52px;letter-spacing:-3px}.section,.page{padding-left:18px;padding-right:18px}.stats{padding-left:18px;padding-right:18px;grid-template-columns:1fr 1fr}.spriteGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.community{margin-left:18px;margin-right:18px}.ssCardGrid{grid-template-columns:1fr}.notifyWrap{margin-left:auto}#auth{display:none}}
 @media(max-width:520px){.hero h1{font-size:43px}.stats{grid-template-columns:1fr 1fr}.spriteGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.sprite .art{height:100px}.sprite .art img{width:86px;height:86px}.heroBox{padding:18px}.trade{flex-direction:column}.page.heroSmall{padding-top:42px}}
+
+/* V38 — refreshed SpriteSwap colors */
+:root{--ss-purple:#8b6cff;--ss-purple2:#b29cff;--ss-blue:#36d9ff;--ss-bg2:#0a0f15;--ss-panel:#0e151c;--ss-border:#263642}
+body{background:radial-gradient(circle at 75% -10%,rgba(139,108,255,.13),transparent 32%),radial-gradient(circle at 10% 20%,rgba(54,217,255,.07),transparent 28%),#080c11!important}
+header{background:rgba(8,12,17,.96);border-bottom-color:#26313a}
+.logo:before{background:linear-gradient(135deg,var(--ss-purple2),var(--ss-purple),#5b43d9);box-shadow:0 0 25px rgba(139,108,255,.32)}
+nav a.active{color:#fff;background:linear-gradient(135deg,rgba(139,108,255,.18),rgba(54,217,255,.07));border:1px solid rgba(139,108,255,.28)}
+.btn.primary{background:linear-gradient(135deg,#9275ff,#7657ed)!important;color:#fff!important;border-color:#9275ff!important;box-shadow:0 7px 24px rgba(118,87,237,.2)}
+.btn.primary:hover{background:linear-gradient(135deg,#a28aff,#8064f4)!important}
+.hero h1 span{color:var(--ss-purple2)}
+.section:before{background:linear-gradient(90deg,var(--ss-blue),var(--ss-purple))}
+.stats div:hover,.featureGrid>div:hover,.trade:hover,.sprite:hover,.panel:hover{border-color:rgba(139,108,255,.62)!important}
+.sprite .art{background:radial-gradient(circle at 50% 25%,#273746,#0a1016 72%);border-color:#293944}
+.indexTools input:focus,.indexTools select:focus,.tools input:focus,.tools select:focus{outline:none;border-color:var(--ss-purple);box-shadow:0 0 0 3px rgba(139,108,255,.1)}
+.ssLive{color:#63e6aa}.ssLive:before{background:#63e6aa}
+@media(max-width:850px){header{padding:10px 14px;height:auto}}
