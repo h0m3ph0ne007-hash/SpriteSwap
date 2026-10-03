@@ -20,16 +20,21 @@ function imageCandidates(name,tier){
   var parents={"Fire":"Spitfire","Dream":"Sleepy","Vini Jr.":"Soccer","Striker":"Drifter","8-Bit":"EightBitBlaster","Jackrabbit":"JazzJackrabbit","Bush":"BushRanger","The Deer":"NarrowFleaScribe","Sonic":"NarrowFleaMonkey","Shadow":"NarrowFleaObsidian"};
   var parent=parents[wanted]||wanted;
   var variants={"Base":"base","Gold":"gold","Cheat Master":"cheatmaster","Loot Hacker":"loothacker","Bounty Hunter":"bountyhunter","Trick or Treat":"trickortreat"};
-  var variant=(variants[t]||"base").toLowerCase();
-  if(window.SPRITE_MANIFEST){
+  var variant=String(variants[t]||"base").toLowerCase();
+  function norm(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+  var wantedParent=norm(parent);
+  if(Array.isArray(window.SPRITE_MANIFEST)){
     window.SPRITE_MANIFEST.forEach(function(x){
-      if(String(x.season).toLowerCase()!=="c7s4")return;
-      if(String(x.parent).toLowerCase()===String(parent).toLowerCase() && String(x.variant).toLowerCase()===variant)out.push(x.url);
+      if(norm(x.parent)!==wantedParent)return;
+      if(norm(x.variant)!==norm(variant))return;
+      if(x.url)out.push(x.url);
     });
   }
-  if(!out.length && variant==="base"){
-    out.push("https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_"+assetSlug(parent)+"_L.webp");
-  }
+  // Fortnite.GG's current sprite URL convention is also used as a final fallback.
+  var suffix={Base:"",Gold:"_Gold","Cheat Master":"_Cheatmaster","Loot Hacker":"_LootHacker","Bounty Hunter":"_BountyHunter","Trick or Treat":"_TrickOrTreat"}[t]||"";
+  var slugName=assetSlug(parent);
+  var direct="https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_"+slugName+suffix+"_L.webp";
+  out.push(direct);
   return Array.from(new Set(out));
 }
 function swapImage(img){
