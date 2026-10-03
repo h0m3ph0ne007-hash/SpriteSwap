@@ -24,7 +24,8 @@ function swapImage(img){
 }
 function image(name,tier,cls){
   var list=imageCandidates(name,tier||"Base");
-  return '<div class="art dynamic-art '+(cls||"")+'" data-fallbacks="'+esc(JSON.stringify(list))+'"><img src="'+esc(list[0])+'" alt="'+esc(name)+" "+esc(tier||"Base")+'" loading="lazy" onerror="swapImage(this)" onload="this.classList.add(\'loaded\')"><div class="art-label">'+esc(name)+'</div></div>';
+  var bg=(window.SPRITE_BACKGROUND_URL||"https://fnggcdn.com/assets-s/5OMtlQ.jpg");
+  return '<div class="art dynamic-art sprite-bg '+(cls||"")+'" style="--sprite-bg:url(\''+esc(bg)+'\')" data-fallbacks="'+esc(JSON.stringify(list))+'"><img src="'+esc(list[0])+'" alt="'+esc(name)+" "+esc(tier||"Base")+'" loading="lazy" onerror="swapImage(this)" onload="this.classList.add(\'loaded\')"><div class="art-label">'+esc(name)+'</div></div>';
 }
 function layout(title,active,content){
   var nav=[["Home","index.html"],["Sprites","index-page.html"],["New","new.html"],["Trades","trades.html"],["Chat","chat.html"],["Upcoming","upcoming.html"],["Wishlist","wishlist.html"],["Community","community.html"],["Leaderboard","leaderboard.html"],["Profile","profile.html"],["Settings","settings.html"]];
