@@ -1,0 +1,22 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "spriteswap": {
+      "trading": {
+        "messages": {
+          ".indexOn": ["createdAt"],
+          "$message": {
+            ".validate": "newData.hasChildren(['title','sprite','trader','createdAt','clientId']) && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('title').val().length <= 180 && newData.child('sprite').isString() && newData.child('sprite').val().length <= 80 && newData.child('trader').isString() && newData.child('trader').val().length <= 40 && newData.child('createdAt').isNumber() && newData.child('clientId').isString()"
+          }
+        },
+        "presence": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid",
+            ".validate": "newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length <= 40 && newData.child('at').isNumber()"
+          }
+        }
+      }
+    }
+  }
+}
