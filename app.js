@@ -99,35 +99,50 @@ function issueWarning(reason){const m=moderationData();m.warnings=(m.warnings||0
 function isBanned(){const m=moderationData();if(m.lifetime)return true;if(m.bannedUntil>Date.now())return true;if(m.bannedUntil){m.bannedUntil=0;saveModeration(m)}return false}
 function botMessage(){const m=moderationData();if(m.lifetime)return "Safety Bot: lifetime restriction is active.";if(m.bannedUntil>Date.now())return "Safety Bot: 24-hour restriction is active.";return m.warnings?("Safety Bot: "+m.warnings+"/3 warnings."): "Safety Bot: good standing."}
 function initTrades(){
-  let channel=null;
+  let channel=null,cloudDb=null,cloudRef=null,cloudPresence=null,cloudReady=false;
+  const clientId=localStorage.getItem("spriteswap-client-id")||(()=>{const x=crypto?.randomUUID?.()||("ss-"+Date.now()+"-"+Math.random().toString(36).slice(2));localStorage.setItem("spriteswap-client-id",x);return x})();
   try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-trading"):null}catch(e){}
-  const render=()=>{
+  const config=window.SPRITESWAP_FIREBASE_CONFIG||{};
+  const hasConfig=!!(window.firebase&&config.apiKey&&config.databaseURL&&config.projectId&&config.appId);
+  if(hasConfig){
+    try{
+      if(!firebase.apps.length)firebase.initializeApp(config);
+      cloudDb=firebase.database();cloudRef=cloudDb.ref("spriteswap/trading/messages");cloudPresence=cloudDb.ref("spriteswap/trading/presence/"+clientId);cloudReady=true;
+      cloudPresence.set({name:profileData().name||"Trader",at:firebase.database.ServerValue.TIMESTAMP});
+      cloudPresence.onDisconnect().remove();
+      cloudDb.ref(".info/connected").on("value",snap=>{document.querySelector(".online-dot")?.replaceChildren(document.createTextNode(snap.val()===true?"● LIVE":"○ OFFLINE"))});
+    }catch(err){console.warn("SpriteSwap realtime backend unavailable:",err);cloudReady=false}
+  }
+  const getCloud=()=>new Promise(resolve=>{
+    if(!cloudReady||!cloudRef)return resolve(null);
+    cloudRef.limitToLast(100).once("value").then(snap=>{const v=snap.val()||{};resolve(Object.values(v).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))) }).catch(()=>resolve(null));
+  });
+  const render=async()=>{
     const q=(document.getElementById("tradeSearch")?.value||"").toLowerCase().trim();
-    const trades=tradeData().filter(x=>!q||(x.title+" "+x.sprite+" "+x.trader).toLowerCase().includes(q));
-    layout("Trades","Trades",`<main><section class="hero"><div class="shell"><div class="kicker">TRADING CHAT</div><h1>Trade in real time.<br><span style="color:var(--mint)">Talk like a community.</span></h1><p>Discord-style trading chat for SpriteSwap. Messages sync between open SpriteSwap tabs on the same device in this static build.</p><div class="actions"><button class="btn primary" id="postTrade">Post a trade</button><a class="btn" href="index-page.html">Browse sprites</a></div></div></section><section class="section"><div class="shell"><div class="trade-layout"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Trading Chat</b><span class="online-dot">● LIVE</span></div><div id="tradeMessages" class="chat-messages">${trades.map((x,i)=>`<div class="chat-msg"><div class="avatar">${esc((x.trader||"S")[0])}</div><div class="chat-bubble"><div><b>${esc(x.trader)}</b><span class="muted"> · ${esc(x.time||"now")}</span></div><div>${esc(x.title)}</div><small>🔄 ${esc(x.sprite)}</small></div><button class="chat-view" data-trade="${i}">View</button></div>`).join("")||'<div class="notice">No trade messages yet. Start the chat.</div>'}</div><div class="chat-compose"><input id="tradeSearch" class="input" value="${esc(q)}" placeholder="Search trading chat…"><input id="tradeMessage" class="input" placeholder="Say what you want to trade…" maxlength="180"><button id="quickPost" class="btn primary">Send</button></div></div><aside class="trade-side"><h3>Trading room</h3><p class="muted">Post an offer, name the sprite, and keep trades clear. The Safety Bot checks new messages before they appear.</p><div class="notice">${esc(botMessage())}</div><a class="btn" href="report.html">Report a message</a></aside></div></div></section></main>`);
+    const source=cloudReady?await getCloud():tradeData();
+    const trades=(source||[]).filter(x=>!q||(x.title+" "+x.sprite+" "+x.trader).toLowerCase().includes(q));
+    layout("Trades","Trades",`<main><section class="hero"><div class="shell"><div class="kicker">TRADING CHAT</div><h1>Trade in real time.<br><span style="color:var(--mint)">Talk like a community.</span></h1><p>${cloudReady?"Global realtime trading chat is connected.":"Trading chat is running locally until the Firebase connection is configured."}</p><div class="actions"><button class="btn primary" id="postTrade">Post a trade</button><a class="btn" href="index-page.html">Browse sprites</a></div></div></section><section class="section"><div class="shell"><div class="trade-layout"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Trading Chat</b><span class="online-dot">${cloudReady?"● LIVE":"○ LOCAL"}</span></div><div id="tradeMessages" class="chat-messages">${trades.map((x,i)=>`<div class="chat-msg"><div class="avatar">${esc((x.trader||"S")[0])}</div><div class="chat-bubble"><div><b>${esc(x.trader)}</b><span class="muted"> · ${esc(x.time||"now")}</span></div><div>${esc(x.title)}</div><small>🔄 ${esc(x.sprite)}</small></div><button class="chat-view" data-trade="${i}">View</button></div>`).join("")||'<div class="notice">No trade messages yet. Start the chat.</div>'}</div><div class="chat-compose"><input id="tradeSearch" class="input" value="${esc(q)}" placeholder="Search trading chat…"><input id="tradeMessage" class="input" placeholder="Say what you want to trade…" maxlength="180"><select id="tradeSprite" class="input"><option value="">Choose a sprite…</option>${FAMILIES.map(n=>`<option>${esc(n)}</option>`).join("")}</select><button id="quickPost" class="btn primary">Send</button></div></div><aside class="trade-side"><h3>Trading room</h3><p class="muted">Post an offer and choose the sprite involved. Messages are checked by the Safety Bot.</p><div class="notice">${esc(botMessage())}</div><div class="notice">${cloudReady?"🌐 Global mode: other connected devices can receive messages instantly.":"💾 Local mode: add your Firebase config to enable global chat."}</div><a class="btn" href="report.html">Report a message</a></aside></div></div></section></main>`);
     document.getElementById("tradeSearch").oninput=render;
-    const post=()=>{
+    const post=async()=>{
       if(isBanned()){alert(botMessage());return}
-      const input=document.getElementById("tradeMessage");
-      const title=input?.value.trim();
+      const input=document.getElementById("tradeMessage"),select=document.getElementById("tradeSprite");
+      const title=input?.value.trim(),sprite=select?.value||"Any sprite";
       if(!title)return;
-      const sprite=prompt("Which sprite is involved?")||"Any sprite";
       if(moderationCheck(title+" "+sprite)){const m=issueWarning("Potentially rule-breaking trade content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return}
-      const a=tradeData();
-      a.unshift({title,sprite,trader:profileData().name||"SpriteSwap Trader",time:"just now"});
-      saveTrades(a.slice(0,100));
-      if(channel)try{channel.postMessage({type:"new-trade"})}catch(e){}
+      const item={title,sprite,trader:profileData().name||"SpriteSwap Trader",time:"just now",createdAt:Date.now(),clientId};
+      if(cloudReady&&cloudRef){try{await cloudRef.push(item)}catch(err){alert("The global chat could not send that message.");return}}
+      else{const a=tradeData();a.unshift(item);saveTrades(a.slice(0,100));if(channel)try{channel.postMessage({type:"new-trade"})}catch(e){}}
       render();
     };
-    document.getElementById("postTrade").onclick=post;
-    document.getElementById("quickPost").onclick=post;
-    document.getElementById("tradeMessage").onkeydown=e=>{if(e.key==="Enter")post()};
-    document.querySelectorAll("[data-trade]").forEach(b=>b.onclick=()=>{const x=trades[Number(b.dataset.trade)];if(x)alert(x.title+"\n\n"+x.sprite+"\nPosted by "+x.trader)});
+    document.getElementById("postTrade").onclick=post;document.getElementById("quickPost").onclick=post;document.getElementById("tradeMessage").onkeydown=e=>{if(e.key==="Enter")post()};
+    document.querySelectorAll("[data-trade]").forEach(b=>b.onclick=()=>{const x=trades[Number(b.dataset.trade)];if(x)alert(x.title+"\\n\\n"+x.sprite+"\\nPosted by "+x.trader)});
   };
+  if(cloudReady&&cloudRef)cloudRef.on("value",()=>render());
   if(channel)channel.onmessage=()=>render();
   window.addEventListener("storage",e=>{if(e.key==="spriteswap-trades")render()});
   render();
 }
+
 function initUpcoming(){
   const items=[["Pacman","Tracked upcoming sprite","hot"],["Loot Master Crown","Variant watch","hot"],["Halloween Event","Season event sprite watch","hot"],["Mystery Sprite","Details coming soon","hot"]];
   layout("Upcoming","Upcoming",`<main><section class="hero"><div class="shell"><div class="kicker">NEXT UP</div><h1>Coming<br><span style="color:var(--mint)">soon.</span></h1><p>Sprites and variants being watched by SpriteSwap before they are added to the live index.</p></div></section><section class="section"><div class="shell"><div class="upcoming-grid">${items.map(([n,d,b])=>`<article class="card upcoming-card"><div class="upcoming-art"><div class="upcoming-icon">${n==="Pacman"?"P":n==="Loot Master Crown"?"♛":"✦"}</div></div><div class="card-body"><span class="badge ${b}">UPCOMING</span><h3>${n}</h3><p>${d}</p></div></article>`).join("")}</div></div></section></main>`);
