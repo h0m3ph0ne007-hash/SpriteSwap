@@ -1,32 +1,24 @@
 const FAMILIES=["Jonesy","Adventure","Bush","Sonic","Tails","Shadow","8-Bit","Jackrabbit","Crown","Killswitch","Klombo","Mega Man","Overshield","X-Ray","Onigiri","Storm Scout","Blinky","Birthday","Crash Bandicoot","Pond","Morgana","Spooky Dash","Vampire","The Deer","Dumpster Dive"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
+const assetSlug=s=>String(s).replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
 const imageCandidates=(name,tier="Base")=>{
-  const s=slug(name), display=(tier==="Base"?name:`${tier} ${name}`);
-  const enc=encodeURIComponent(display);
-  const slugs=tierSlugs(tier);
+  const n=assetSlug(name),variant=tier==="Base"?"":assetSlug(tier)+"_";
   return [
-    ...slugs.map(v=>`https://api.spritetrading.com/sprites/${v?`${s}-${v}`:s}.webp?w=640`),
-    `https://api.spritetrading.com/sprites/${s}.webp?w=640`,
-    `https://fortnite.gg/img/sprites/${enc}.png`
+    `https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${n}_${variant}L.webp`,
+    ...tierSlugs(tier).map(v=>`https://api.spritetrading.com/sprites/${v?`${slug(name)}-${v}`:slug(name)}.webp?w=640`),
+    `https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${n}_L.webp`
   ];
 };
 const image=(name,tier="Base",cls="")=>{
   const candidates=imageCandidates(name,tier);
-  const first=candidates[0]||"";
-  return `<div class="art dynamic-art ${cls}" data-fallbacks='${esc(JSON.stringify(candidates))}'><img src="${first}" alt="${esc(name)} ${esc(tier)}" loading="lazy" onerror="swapImage(this)" onload="this.classList.add('loaded')"><div class="art-label">${esc(name)}</div></div>`;
+  return `<div class="art dynamic-art ${cls}" data-fallbacks='${esc(JSON.stringify(candidates))}'><img src="${candidates[0]}" alt="${esc(name)} ${esc(tier)}" loading="lazy" onerror="swapImage(this)" onload="this.classList.add('loaded')"><div class="art-label">${esc(name)}</div></div>`;
 };
-function swapImage(img){
-  try{
-    const box=img.closest("[data-fallbacks]"), list=JSON.parse(box?.dataset.fallbacks||"[]"), i=Number(img.dataset.fallbackIndex||0)+1;
-    if(i<list.length){img.dataset.fallbackIndex=i;img.src=list[i];return}
-    img.style.display="none"; box?.classList.add("missing-art");
-  }catch(e){img.style.display="none"}
-}
+function swapImage(img){try{const box=img.closest("[data-fallbacks]"),list=JSON.parse(box?.dataset.fallbacks||"[]"),i=Number(img.dataset.fallbackIndex||0)+1;if(i<list.length){img.dataset.fallbackIndex=i;img.src=list[i];return}box?.classList.add("missing-art");img.style.display="none"}catch(e){img.style.display="none"}}
 function savedList(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
 function toggleSaved(key,id){const a=savedList(key),i=a.indexOf(id);i>=0?a.splice(i,1):a.push(id);localStorage.setItem(key,JSON.stringify(a));return i<0}
 function spriteCards(list=FAMILIES,tier="Base"){
   return list.filter(n=>isTracked(n,tier)).map(n=>{
     const id=n+"::"+tier,w=savedList("spriteswap-wishlist").includes(id),m=savedList("spriteswap-mastered").includes(id);
-    return `<article class="card sprite-card tier-${slug(tier)}" data-name="${esc(n)}" data-tier="${esc(tier)}"><div class="art dynamic-art">${image(n,tier)}<button class="wish-btn ${w?"saved":""}" data-action="wish" title="Wishlist">${w?"★":"☆"}</button></div><div class="card-body"><span class="badge ${NEW.includes(n)?"new":""}">${NEW.includes(n)?"NEW":"SPRITE"}</span><span class="variant">${esc(tier)}</span><h3>${esc(n)}</h3><p>${tier==="Base"?"Base sprite":esc(tier)+" variant"} · ${CURRENT_SEASON}</p><div class="card-actions"><button class="mini-btn" data-action="details">View details</button><button class="mini-btn mastered-btn ${m?"done":""}" data-action="mastered">${m?"✓ Mastered":"Mark mastered"}</button></div></div></article>`
+    return `<article class="card sprite-card tier-${slug(tier)}" data-name="${esc(n)}" data-tier="${esc(tier)}">${image(n,tier)}<button class="wish-btn ${w?"saved":""}" data-action="wish" title="Wishlist">${w?"★":"☆"}</button></div><div class="card-body"><span class="badge ${NEW.includes(n)?"new":""}">${NEW.includes(n)?"NEW":"SPRITE"}</span><span class="variant">${esc(tier)}</span><h3>${esc(n)}</h3><p>${tier==="Base"?"Base sprite":esc(tier)+" variant"} · ${CURRENT_SEASON}</p><div class="card-actions"><button class="mini-btn" data-action="details">View details</button><button class="mini-btn mastered-btn ${m?"done":""}" data-action="mastered">${m?"✓ Mastered":"Mark mastered"}</button></div></div></article>`
   }).join("")
 }
 function bindSpriteActions(){
@@ -65,7 +57,7 @@ function initIndex(){
 }
 function pageShell(active,kicker,title,desc,content){layout(title,active,`<main><section class="hero"><div class="shell"><div class="kicker">${kicker}</div><h1>${title}</h1><p>${desc}</p></div></section><section class="section"><div class="shell">${content}</div></section></main>`)}function initHome(){layout("Home","Home",`<main><section class="hero home-hero"><div class="shell hero-grid"><div><div class="kicker">SPRITESWAP / COMMUNITY HUB</div><h1>Trade. Collect.<br><span style="color:var(--mint)">Complete your set.</span></h1><p>Explore sprites, discover variants, keep your wishlist organized, and find your next trade.</p><div class="actions"><a class="btn primary" href="index-page.html">Browse sprites</a><a class="btn" href="trades.html">Explore trades</a></div></div><div class="hero-card feature-sprite"><div class="kicker">FEATURED · ${CURRENT_SEASON}</div>${image("Crown","Gold")}<strong>Gold Crown</strong><p>Featured current variant</p></div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">CURRENT</div><h2>New this season</h2></div><a class="btn" href="new.html">View all</a></div><div class="grid">${spriteCards(NEW,"Base")}</div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">UP NEXT</div><h2>Coming soon</h2></div><a class="btn" href="upcoming.html">See upcoming</a></div><div class="list"><div class="row"><div class="avatar">P</div><div class="grow"><b>Pacman</b><div class="muted">Tracked upcoming sprite</div></div></div><div class="row"><div class="avatar">L</div><div class="grow"><b>Loot Master Crown</b><div class="muted">Variant watch</div></div></div></div></div></section></main>`)}
 function initWishlist(){
-  const render=()=>{
+  const render=()=>{\n      const cleaned=tradeData().filter(x=>x.trader!=="Community Trader"); if(cleaned.length!==tradeData().length)saveTrades(cleaned);
     const wanted=savedList("spriteswap-wishlist"), mastered=savedList("spriteswap-mastered");
     const make=(ids,kind)=>ids.map(id=>{const [n,t]=id.split("::");if(!n||!FAMILIES.includes(n)||!isTracked(n,t))return "";return `<article class="card sprite-card tier-${slug(t)}" data-name="${esc(n)}" data-tier="${esc(t)}"><div class="art dynamic-art">${image(n,t)}</div><div class="card-body"><span class="badge ${kind==="mastered"?"new":""}">${kind==="mastered"?"MASTERED":"WISHLIST"}</span><span class="variant">${esc(t)}</span><h3>${esc(n)}</h3><p>${t==="Base"?"Base sprite":esc(t)+" variant"} · ${CURRENT_SEASON}</p><div class="card-actions"><button class="mini-btn" data-remove="${kind}">Remove</button></div></div></article>`}).join("");
     layout("Wishlist","Wishlist",`<main><section class="hero"><div class="shell"><div class="kicker">YOUR COLLECTION</div><h1>Wishlist &<br><span style="color:var(--mint)">Mastered.</span></h1><p>Your saved sprites stay in this browser. Build your wishlist, then mark the sprites you own as mastered.</p></div></section><section class="section"><div class="shell"><div class="stats"><div class="stat"><b>${wanted.length}</b><span>Wishlist</span></div><div class="stat"><b>${mastered.length}</b><span>Mastered</span></div><div class="stat"><b>${FAMILIES.length}</b><span>Families</span></div><div class="stat"><b>${Math.round((mastered.length/145)*100)}%</b><span>Tracked completion</span></div></div><div class="section-head"><div><h2>Wishlist</h2><div class="muted">Sprites you want to trade for.</div></div><a class="btn" href="index-page.html">Browse sprites</a></div><div id="wishGrid" class="grid">${make(wanted,"wishlist")||'<div class="notice">Nothing here yet. Add sprites from the index.</div>'}</div><div class="section-head" style="margin-top:42px"><div><h2>Mastered</h2><div class="muted">Sprites you've marked as collected.</div></div></div><div id="masteredGrid" class="grid">${make(mastered,"mastered")||'<div class="notice">No mastered sprites yet.</div>'}</div></div></section></main>`);
@@ -75,12 +67,18 @@ function initWishlist(){
 }
 function tradeData(){try{return JSON.parse(localStorage.getItem("spriteswap-trades")||"[]")}catch(e){return[]}}
 function saveTrades(a){localStorage.setItem("spriteswap-trades",JSON.stringify(a))}
+function moderationData(){try{return JSON.parse(localStorage.getItem("spriteswap-moderation")||'{"warnings":0,"bannedUntil":0,"lifetime":false,"reports":[]}')}catch(e){return {warnings:0,bannedUntil:0,lifetime:false,reports:[]}}}
+function saveModeration(x){localStorage.setItem("spriteswap-moderation",JSON.stringify(x))}
+function moderationCheck(text){const s=String(text||"").toLowerCase();return [/spam/i,/scam/i,/phish/i,/threat/i,/harass/i,/hate/i,/slur/i,/cheat code/i].some(r=>r.test(s))}
+function issueWarning(reason){const m=moderationData();m.warnings=(m.warnings||0)+1;m.lastReason=reason;if(m.warnings>=3)m.bannedUntil=Date.now()+86400000;if(m.warnings>=6){m.lifetime=true;m.bannedUntil=0}saveModeration(m);return m}
+function isBanned(){const m=moderationData();if(m.lifetime)return true;if(m.bannedUntil>Date.now())return true;if(m.bannedUntil){m.bannedUntil=0;saveModeration(m)}return false}
+function botMessage(){const m=moderationData();if(m.lifetime)return "Safety Bot: lifetime restriction is active.";if(m.bannedUntil>Date.now())return "Safety Bot: 24-hour restriction is active.";return m.warnings?("Safety Bot: "+m.warnings+"/3 warnings."): "Safety Bot: good standing."}
 function initTrades(){
   const render=()=>{
     const q=(document.getElementById("tradeSearch")?.value||"").toLowerCase().trim(), trades=tradeData().filter(x=>!q||(x.title+x.sprite+x.trader).toLowerCase().includes(q));
     layout("Trades","Trades",`<main><section class="hero"><div class="shell"><div class="kicker">MARKETPLACE</div><h1>Find your next<br><span style="color:var(--mint)">trade.</span></h1><p>Community trade posts are saved in this browser for now. Create a listing with the button below.</p><div class="actions"><button class="btn primary" id="postTrade">Post a trade</button><a class="btn" href="index-page.html">Browse sprites</a></div></div></section><section class="section"><div class="shell"><div class="tools"><input id="tradeSearch" class="input" value="${esc(q)}" placeholder="Search sprite, trader or offer…"></div><div class="list">${trades.map((x,i)=>`<div class="row"><div class="avatar">${esc(x.sprite[0]||"S")}</div><div class="grow"><b>${esc(x.title)}</b><div class="muted">${esc(x.sprite)} · ${esc(x.trader)} · ${esc(x.time)}</div></div><button class="btn" data-trade="${i}">View</button></div>`).join("")||'<div class="notice">No trade posts yet. Be the first to create one.</div>'}</div></div></section></main>`);
     document.getElementById("tradeSearch").oninput=render;
-    document.getElementById("postTrade").onclick=()=>{const title=prompt("What are you trading for?");if(!title)return;const sprite=prompt("Which sprite is involved?")||"Any sprite";const a=tradeData();a.unshift({title,sprite,trader:"SpriteSwap Trader",time:"just now"});saveTrades(a);render()};
+    document.getElementById("postTrade").onclick=()=>{if(isBanned()){alert(botMessage());return;}\n        const title=prompt("What are you trading for?");if(!title)return;const sprite=prompt("Which sprite is involved?")||"Any sprite";if(moderationCheck(title+" "+sprite)){const m=issueWarning("Potential rule-breaking trade content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return;}\n        const a=tradeData();a.unshift({title,sprite,trader:"SpriteSwap Trader",time:"just now"});saveTrades(a);render()};
     document.querySelectorAll("[data-trade]").forEach(b=>b.onclick=()=>{const a=tradeData(),x=a[Number(b.dataset.trade)];if(x)alert(x.title+"\n\n"+x.sprite+"\nPosted by "+x.trader)});
   };
   if(!tradeData().length)saveTrades([{title:"Looking for Gold Jonesy",sprite:"Jonesy · Gold",trader:"Community Trader",time:"recently"},{title:"Trading Shadow for Sonic",sprite:"Shadow / Sonic",trader:"Community Trader",time:"recently"},{title:"Need Loot Hacker Crown",sprite:"Crown · Loot Hacker",trader:"Community Trader",time:"recently"}]);
