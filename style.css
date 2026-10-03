@@ -66,3 +66,12 @@
 
 /* Sprite index upgrades */
 .sprite-tools{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:10px;align-items:center}.index-viewbar{display:flex;justify-content:space-between;align-items:center;margin:16px 0;color:var(--muted)}.card-meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.rarity{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;padding:4px 7px;border-radius:999px;border:1px solid var(--line);opacity:.85}.rarity.legendary{box-shadow:0 0 12px rgba(255,190,70,.25)}.rarity.epic{box-shadow:0 0 12px rgba(180,100,255,.2)}.dynamic-art img{object-fit:contain}.dynamic-art.missing-art:after{content:"Icon unavailable";display:block;font-size:.72rem;color:var(--muted);padding:8px}.dynamic-art.missing-art img{display:none}@media(max-width:900px){.sprite-tools{grid-template-columns:1fr 1fr}.sprite-tools .input{grid-column:1/-1}}@media(max-width:560px){.sprite-tools{grid-template-columns:1fr}.index-viewbar{gap:10px;align-items:flex-start;flex-direction:column}}
+
+/* SpriteSwap upgrade */
+.trade-filter-check{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);color:var(--muted);font-size:12px}
+.trade-filter-check input{accent-color:var(--mint)}
+.community-hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.community-hub-grid .hero-card{min-height:190px}
+.trade-post-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:15px 16px;border-bottom:1px solid var(--line)}
+.trade-post-top h3{margin:7px 0 4px}
+@media(max-width:700px){.community-hub-grid{grid-template-columns:1fr}.trade-post-top{flex-direction:column}.trade-post-top .btn{width:100%}}
