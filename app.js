@@ -107,11 +107,14 @@ function initTrades(){
   if(hasConfig){
     try{
       if(!firebase.apps.length)firebase.initializeApp(config);
-      if(firebase.auth && !firebase.auth().currentUser){ firebase.auth().signInAnonymously().catch(()=>{}); }
-      cloudDb=firebase.database();cloudRef=cloudDb.ref("spriteswap/trading/messages");cloudPresence=cloudDb.ref("spriteswap/trading/presence/"+clientId);cloudReady=true;
-      cloudPresence.set({name:profileData().name||"Trader",at:firebase.database.ServerValue.TIMESTAMP});
-      cloudPresence.onDisconnect().remove();
-      cloudDb.ref(".info/connected").on("value",snap=>{document.querySelector(".online-dot")?.replaceChildren(document.createTextNode(snap.val()===true?"● LIVE":"○ OFFLINE"))});
+      const startCloud=()=>{
+        cloudDb=firebase.database();cloudRef=cloudDb.ref("spriteswap/trading/messages");cloudPresence=cloudDb.ref("spriteswap/trading/presence/"+clientId);cloudReady=true;
+        cloudPresence.set({name:profileData().name||"Trader",at:firebase.database.ServerValue.TIMESTAMP});
+        cloudPresence.onDisconnect().remove();
+        cloudDb.ref(".info/connected").on("value",snap=>{document.querySelector(".online-dot")?.replaceChildren(document.createTextNode(snap.val()===true?"● LIVE":"○ OFFLINE"));if(snap.val()===true)render()});
+        render();
+      };
+      if(firebase.auth?.currentUser)startCloud();else if(firebase.auth?.signInAnonymously)firebase.auth().signInAnonymously().then(startCloud).catch(err=>console.warn("SpriteSwap anonymous sign-in unavailable:",err));
     }catch(err){console.warn("SpriteSwap realtime backend unavailable:",err);cloudReady=false}
   }
   const getCloud=()=>new Promise(resolve=>{
