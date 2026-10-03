@@ -2,7 +2,7 @@ function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").
 function isTracked(name,tier="Base"){return FAMILIES.includes(name)&&TIERS.includes(tier)}
 function moderationStatus(){const m=moderationData();if(m.lifetime)return "Lifetime restriction";if(m.bannedUntil>Date.now())return "24-hour restriction";return (m.warnings||0)+"/3 warnings"}
 function layout(title,active,content){
-  const nav=[["Home","index.html"],["Sprites","index-page.html"],["New","new.html"],["Trades","trades.html"],["Upcoming","upcoming.html"],["Wishlist","wishlist.html"],["Community","community.html"],["Leaderboard","leaderboard.html"],["Profile","profile.html"],["Settings","settings.html"]];
+  const nav=[["Home","index.html"],["Sprites","index-page.html"],["New","new.html"],["Trades","trades.html"],["Chat","chat.html"],["Upcoming","upcoming.html"],["Wishlist","wishlist.html"],["Community","community.html"],["Leaderboard","leaderboard.html"],["Profile","profile.html"],["Settings","settings.html"]];
   document.title=title+" · SpriteSwap";
   const app=document.getElementById("app");
   if(!app) throw new Error("SpriteSwap app root is missing");
@@ -106,54 +106,88 @@ function moderationCheck(text){const s=String(text||"").toLowerCase();return [/s
 function issueWarning(reason){const m=moderationData();m.warnings=(m.warnings||0)+1;m.lastReason=reason;if(m.warnings>=3)m.bannedUntil=Date.now()+86400000;if(m.warnings>=6){m.lifetime=true;m.bannedUntil=0}saveModeration(m);return m}
 function isBanned(){const m=moderationData();if(m.lifetime)return true;if(m.bannedUntil>Date.now())return true;if(m.bannedUntil){m.bannedUntil=0;saveModeration(m)}return false}
 function botMessage(){const m=moderationData();if(m.lifetime)return "Safety Bot: lifetime restriction is active.";if(m.bannedUntil>Date.now())return "Safety Bot: 24-hour restriction is active.";return m.warnings?("Safety Bot: "+m.warnings+"/3 warnings."): "Safety Bot: good standing."}
-function initTrades(){
-  let channel=null,cloudDb=null,cloudRef=null,cloudPresence=null,cloudReady=false;
-  const clientId=localStorage.getItem("spriteswap-client-id")||(()=>{const x=window.crypto?.randomUUID?.()||("ss-"+Date.now()+"-"+Math.random().toString(36).slice(2));localStorage.setItem("spriteswap-client-id",x);return x})();
-  try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-trading"):null}catch(e){}
-  const config=window.SPRITESWAP_FIREBASE_CONFIG||{};
-  const hasConfig=!!(window.firebase&&config.apiKey&&config.databaseURL&&config.projectId&&config.appId);
-  if(hasConfig){
-    try{
-      if(!firebase.apps.length)firebase.initializeApp(config);
-      const startCloud=()=>{
-        cloudDb=firebase.database();cloudRef=cloudDb.ref("spriteswap/trading/messages");cloudPresence=cloudDb.ref("spriteswap/trading/presence/"+clientId);cloudReady=true;
-        cloudPresence.set({name:profileData().name||"Trader",at:firebase.database.ServerValue.TIMESTAMP});
-        cloudPresence.onDisconnect().remove();
-        cloudDb.ref(".info/connected").on("value",snap=>{document.querySelector(".online-dot")?.replaceChildren(document.createTextNode(snap.val()===true?"● LIVE":"○ OFFLINE"));if(snap.val()===true)render()});
-        render();
-      };
-      if(firebase.auth?.currentUser)startCloud();else if(firebase.auth?.signInAnonymously)firebase.auth().signInAnonymously().then(startCloud).catch(err=>console.warn("SpriteSwap anonymous sign-in unavailable:",err));
-    }catch(err){console.warn("SpriteSwap realtime backend unavailable:",err);cloudReady=false}
-  }
-  const getCloud=()=>new Promise(resolve=>{
-    if(!cloudReady||!cloudRef)return resolve(null);
-    cloudRef.limitToLast(100).once("value").then(snap=>{const v=snap.val()||{};resolve(Object.values(v).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))) }).catch(()=>resolve(null));
-  });
-  const render=async()=>{
-    const q=(document.getElementById("tradeSearch")?.value||"").toLowerCase().trim();
-    const source=cloudReady?await getCloud():tradeData();
-    const trades=(source||[]).filter(x=>!q||(x.title+" "+x.sprite+" "+x.trader).toLowerCase().includes(q));
-    layout("Trades","Trades",`<main><section class="hero"><div class="shell"><div class="kicker">TRADING CHAT</div><h1>Trade in real time.<br><span style="color:var(--mint)">Talk like a community.</span></h1><p>${cloudReady?"Global realtime trading chat is connected.":"Trading chat is running locally until the Firebase connection is configured."}</p><div class="actions"><button class="btn primary" id="postTrade">Post a trade</button><a class="btn" href="index-page.html">Browse sprites</a></div></div></section><section class="section"><div class="shell"><div class="trade-layout"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Trading Chat</b><span class="online-dot">${cloudReady?"● LIVE":"○ LOCAL"}</span></div><div id="tradeMessages" class="chat-messages">${trades.map((x,i)=>`<div class="chat-msg"><div class="avatar">${esc((x.trader||"S")[0])}</div><div class="chat-bubble"><div><b>${esc(x.trader)}</b><span class="muted"> · ${esc(x.time||"now")}</span></div><div>${esc(x.title)}</div><small>🔄 ${esc(x.sprite)}</small></div><button class="chat-view" data-trade="${i}">View</button></div>`).join("")||'<div class="notice">No trade messages yet. Start the chat.</div>'}</div><div class="chat-compose"><input id="tradeSearch" class="input" value="${esc(q)}" placeholder="Search trading chat…"><input id="tradeMessage" class="input" placeholder="Say what you want to trade…" maxlength="180"><select id="tradeSprite" class="input"><option value="">Choose a sprite…</option>${FAMILIES.map(n=>`<option>${esc(n)}</option>`).join("")}</select><button id="quickPost" class="btn primary">Send</button></div></div><aside class="trade-side"><h3>Trading room</h3><p class="muted">Post an offer and choose the sprite involved. Messages are checked by the Safety Bot.</p><div class="notice">${esc(botMessage())}</div><div class="notice">${cloudReady?"🌐 Global mode: other connected devices can receive messages instantly.":"💾 Local mode: add your Firebase config to enable global chat."}</div><a class="btn" href="report.html">Report a message</a></aside></div></div></section></main>`);
-    document.getElementById("tradeSearch").oninput=render;
-    const post=async()=>{
-      if(isBanned()){alert(botMessage());return}
-      const input=document.getElementById("tradeMessage"),select=document.getElementById("tradeSprite");
-      const title=input?.value.trim(),sprite=select?.value||"Any sprite";
-      if(!title)return;
-      if(moderationCheck(title+" "+sprite)){const m=issueWarning("Potentially rule-breaking trade content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return}
-      const item={title,sprite,trader:profileData().name||"SpriteSwap Trader",time:"just now",createdAt:Date.now(),clientId};
-      if(cloudReady&&cloudRef){try{await cloudRef.push(item)}catch(err){alert("The global chat could not send that message.");return}}
-      else{const a=tradeData();a.unshift(item);saveTrades(a.slice(0,100));if(channel)try{channel.postMessage({type:"new-trade"})}catch(e){}}
-      render();
-    };
-    document.getElementById("postTrade").onclick=post;document.getElementById("quickPost").onclick=post;document.getElementById("tradeMessage").onkeydown=e=>{if(e.key==="Enter")post()};
-    document.querySelectorAll("[data-trade]").forEach(b=>b.onclick=()=>{const x=trades[Number(b.dataset.trade)];if(x)alert(x.title+"\\n\\n"+x.sprite+"\\nPosted by "+x.trader)});
+function tradePosts(){try{return JSON.parse(localStorage.getItem("spriteswap-trade-posts")||"[]")}catch(e){return[]}}
+function saveTradePosts(a){localStorage.setItem("spriteswap-trade-posts",JSON.stringify(a))}
+function tradeTime(ts){const d=Math.max(0,Date.now()-(ts||Date.now()));const m=Math.floor(d/60000);if(m<1)return"just now";if(m<60)return m+"m ago";const h=Math.floor(m/60);if(h<24)return h+"h ago";return Math.floor(h/24)+"d ago"}
+function postSpriteOptions(selected=""){return FAMILIES.map(n=>`<option value="${esc(n)}" ${n===selected?"selected":""}>${esc(n)}</option>`).join("")}
+function renderPostCard(x){
+  const get=Array.isArray(x.get)?x.get:[],give=Array.isArray(x.give)?x.give:[];
+  const chips=a=>a.slice(0,4).map(s=>`<div class="post-sprite"><span class="post-sprite-art">${image(s.name||s, s.tier||"Base")}</span><span><b>${esc(s.name||s)}</b><small>${esc(s.tier||"Base")}</small></span></div>`).join("");
+  return `<article class="trade-post" data-post-id="${esc(x.id)}">
+    <div class="post-user"><div class="avatar">${esc((x.trader||"S")[0].toUpperCase())}</div><div class="grow"><b>${esc(x.trader||"SpriteSwap Trader")}</b><div class="muted">${esc(x.rating||"New trader")} · ${esc(tradeTime(x.createdAt))}</div></div><span class="post-status">OPEN</span></div>
+    <div class="post-columns">
+      <div><div class="post-side-title get">YOU GET <span>${get.length}</span></div><div class="post-sprites">${chips(get)||'<div class="post-empty">Any sprite</div>}${get.length>4?`<div class="post-more">+${get.length-4} more</div>`:""}</div></div>
+      <div><div class="post-side-title give">YOU GIVE <span>${give.length}</span></div><div class="post-sprites">${chips(give)||'<div class="post-empty">Anything fair</div>}${give.length>4?`<div class="post-more">+${give.length-4} more</div>`:""}</div></div>
+    </div>
+    <div class="post-footer"><div><b>${esc(x.title||"Sprite trade")}</b><div class="muted">${esc(x.note||"Straight swap")}</div></div><button class="btn post-view" data-post-view="${esc(x.id)}">View trade</button></div>
+  </article>`
+}
+function openTradePostModal(post=null){
+  const x=post||{title:"",note:"",get:[],give:[]};
+  const modal=document.createElement("div");modal.className="modal-backdrop";
+  const row=(kind,label)=>`<div class="post-builder-side"><div class="section-head"><h3>${label}</h3><button class="mini-btn" type="button" data-add="${kind}">+ Add sprite</button></div><div class="builder-list" data-list="${kind}"></div></div>`;
+  modal.innerHTML=`<div class="modal trade-post-modal"><button class="modal-x">×</button><div class="kicker">TRADES / POST</div><h2>${post?"Trade post":"Post a new trade"}</h2><p class="muted">Choose what you want and what you can give. You can post without starting a chat.</p><label>Post title<input id="postTitle" class="input" maxlength="80" placeholder="Looking for new sprites…" value="${esc(x.title||"")}"></label><label>Note<textarea id="postNote" class="input" maxlength="240" placeholder="Optional details…">${esc(x.note||"")}</textarea></label><div class="post-builder">${row("get","You get")}${row("give","You give")}</div><div class="actions"><button class="btn primary" id="savePost">${post?"Save changes":"Publish trade"}</button><button class="btn" id="cancelPost">Cancel</button></div></div>`;
+  document.body.appendChild(modal);
+  const renderRows=(kind,items)=>{const box=modal.querySelector(`[data-list="${kind}"]`);box.innerHTML=items.map((s,i)=>`<div class="builder-row"><select class="select" data-field="${kind}" data-index="${i}">${postSpriteOptions(s.name)}</select><select class="select tier-select" data-tier="${kind}" data-index="${i}">${TIERS.map(t=>`<option ${t===(s.tier||"Base")?"selected":""}>${esc(t)}</option>`).join("")}</select><button class="mini-btn danger" type="button" data-remove="${kind}" data-index="${i}">×</button></div>`).join("")||'<div class="notice">No sprites added yet.</div>'};
+  const state={get:(x.get||[]).map(s=>typeof s==="string"?{name:s,tier:"Base"}:s),give:(x.give||[]).map(s=>typeof s==="string"?{name:s,tier:"Base"}:s)};
+  ["get","give"].forEach(k=>renderRows(k,state[k]));
+  modal.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{state[b.dataset.add].push({name:FAMILIES[0],tier:"Base"});renderRows(b.dataset.add,state[b.dataset.add])});
+  modal.onclick=e=>{if(e.target===modal)modal.remove();const rm=e.target.closest("[data-remove]");if(rm){state[rm.dataset.remove].splice(Number(rm.dataset.index),1);renderRows(rm.dataset.remove,state[rm.dataset.remove]);}};
+  modal.querySelector(".modal-x").onclick=()=>modal.remove();modal.querySelector("#cancelPost").onclick=()=>modal.remove();
+  modal.querySelector("#savePost").onclick=()=>{
+    const title=modal.querySelector("#postTitle").value.trim()||"Sprite trade";
+    const note=modal.querySelector("#postNote").value.trim()||"Straight swap";
+    if(!state.get.length&&!state.give.length){alert("Add at least one sprite to the trade.");return}
+    const id=post?.id||("post-"+Date.now()+"-"+Math.random().toString(36).slice(2,8));
+    const item={...(post||{}),id,title,note,get:state.get,give:state.give,trader:profileData().name||"SpriteSwap Trader",createdAt:post?.createdAt||Date.now(),rating:post?.rating||"New trader"};
+    const all=tradePosts();const idx=all.findIndex(p=>p.id===id);if(idx>=0)all[idx]=item;else all.unshift(item);saveTradePosts(all.slice(0,200));window.dispatchEvent(new Event("spriteswap-posts-changed"));modal.remove();if(typeof window.__renderTrades==="function")window.__renderTrades();
   };
-  if(cloudReady&&cloudRef)cloudRef.on("value",()=>render());
-  if(channel)channel.onmessage=()=>render();
-  window.addEventListener("storage",e=>{if(e.key==="spriteswap-trades")render()});
+}
+function initTrades(){
+  let channel=null;
+  try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-posts"):null}catch(e){}
+  const render=()=>{
+    const q=(document.getElementById("postSearch")?.value||"").toLowerCase().trim();
+    const side=document.getElementById("postSide")?.value||"all",tier=document.getElementById("postTier")?.value||"all";
+    let posts=tradePosts();
+    posts=posts.filter(x=>{
+      const all=[...(x.get||[]),...(x.give||[])].map(s=>typeof s==="string"?s:s.name).join(" ").toLowerCase();
+      const trader=String(x.trader||"").toLowerCase();
+      const sideOk=side==="all"||((side==="get"?x.get:x.give)||[]).length>0;
+      const tierOk=tier==="all"||[...(x.get||[]),...(x.give||[])].some(s=>(typeof s==="string"?"Base":s.tier)===tier);
+      return (!q||all.includes(q)||trader.includes(q)||String(x.title||"").toLowerCase().includes(q))&&sideOk&&tierOk;
+    });
+    layout("Trades","Trades",`<main><section class="hero trades-hero"><div class="shell"><div class="kicker">TRADING BOARD</div><h1>Find your next<br><span style="color:var(--mint)">sprite swap.</span></h1><p>Every open trade post in one place. Browse the board, filter what you need, or make your own post without having to enter chat.</p><div class="actions"><button class="btn primary" id="newTradePost">+ Post a trade</button><a class="btn" href="chat.html">Open community chat</a></div></div></section><section class="section"><div class="shell"><div class="trade-board-head"><div><div class="kicker">OPEN POSTS</div><h2>All trade posts <span class="post-count">${posts.length}</span></h2><p class="muted">Newest posts first.</p></div></div><div class="post-filters"><input id="postSearch" class="input" value="${esc(q)}" placeholder="Search a trader or sprite…"><select id="postSide" class="select"><option value="all">All posts</option><option value="get">Posts looking for something</option><option value="give">Posts offering something</option></select><select id="postTier" class="select"><option value="all">Any variant</option>${TIERS.map(t=>`<option ${t===tier?"selected":""}>${esc(t)}</option>`).join("")}</select><button id="clearPostFilters" class="btn">Reset</button></div><div id="tradePostList" class="trade-post-list">${posts.map(renderPostCard).join("")||'<div class="notice empty-posts"><b>No trade posts match.</b><span>Try clearing the filters or be the first to post a trade.</span></div>'}</div></div></section></main>`);
+    window.__renderTrades=render;
+    document.getElementById("newTradePost").onclick=()=>openTradePostModal();
+    document.getElementById("postSearch").oninput=render;document.getElementById("postSide").onchange=render;document.getElementById("postTier").onchange=render;document.getElementById("clearPostFilters").onclick=()=>{document.getElementById("postSearch").value="";document.getElementById("postSide").value="all";document.getElementById("postTier").value="all";render()};
+    document.querySelectorAll("[data-post-view]").forEach(b=>b.onclick=()=>{const x=tradePosts().find(p=>p.id===b.dataset.postView);if(!x)return;openTradePostModal(x)});
+  };
+  if(channel)channel.onmessage=render;
+  window.addEventListener("storage",e=>{if(e.key==="spriteswap-trade-posts")render()});
+  window.addEventListener("spriteswap-posts-changed",render);
   render();
 }
+function initChat(){
+  let channel=null;
+  try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-chat"):null}catch(e){}
+  const chatData=()=>{try{return JSON.parse(localStorage.getItem("spriteswap-community-chat")||"[]")}catch(e){return[]}};
+  const saveChat=a=>localStorage.setItem("spriteswap-community-chat",JSON.stringify(a));
+  const render=()=>{
+    const q=(document.getElementById("chatSearch")?.value||"").toLowerCase().trim();
+    const msgs=chatData().filter(m=>!q||String(m.text||"").toLowerCase().includes(q)||String(m.trader||"").toLowerCase().includes(q)).slice(-100);
+    layout("Chat","Chat",`<main><section class="hero"><div class="shell"><div class="kicker">COMMUNITY CHAT</div><h1>Talk about sprites.<br><span style="color:var(--mint)">No trade required.</span></h1><p>Chat about new drops, collections, questions, trades, or whatever is relevant to the SpriteSwap community.</p></div></section><section class="section"><div class="shell"><div class="chat-page"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Community</b><span class="online-dot">● OPEN</span></div><div class="chat-toolbar"><input id="chatSearch" class="input" value="${esc(q)}" placeholder="Search chat…"><button id="clearChat" class="btn">Clear my messages</button></div><div id="communityMessages" class="chat-messages chat-page-messages">${msgs.map(m=>`<div class="chat-msg"><div class="avatar">${esc((m.trader||"S")[0].toUpperCase())}</div><div class="chat-bubble"><div><b>${esc(m.trader||"SpriteSwap Trader")}</b><span class="muted"> · ${esc(tradeTime(m.createdAt))}</span></div><div>${esc(m.text)}</div></div></div>`).join("")||'<div class="notice">No messages yet. Start the conversation.</div>'}</div><div class="chat-compose"><input id="communityMessage" class="input" maxlength="300" placeholder="Say something…"><button id="sendCommunity" class="btn primary">Send</button></div></div><aside class="trade-side"><h3>Community chat</h3><p class="muted">This is a general chat. You do not need to make a trade or choose a sprite to talk here.</p><div class="notice">Be respectful and keep personal information out of public chat.</div><a class="btn" href="trades.html">Browse trade posts</a></aside></div></div></section></main>`);
+    document.getElementById("chatSearch").oninput=render;
+    document.getElementById("sendCommunity").onclick=send;
+    document.getElementById("communityMessage").onkeydown=e=>{if(e.key==="Enter")send()};
+    document.getElementById("clearChat").onclick=()=>{const me=profileData().name||"SpriteSwap Trader";saveChat(chatData().filter(m=>m.trader!==me));render()};
+    function send(){const input=document.getElementById("communityMessage"),text=input.value.trim();if(!text)return;if(moderationCheck(text)){const m=issueWarning("Potentially rule-breaking chat content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return}if(isBanned()){alert(botMessage());return}const a=chatData();a.push({trader:profileData().name||"SpriteSwap Trader",text,createdAt:Date.now()});saveChat(a.slice(-300));if(channel)try{channel.postMessage({type:"chat"})}catch(e){}render()}
+  };
+  if(channel)channel.onmessage=render;
+  window.addEventListener("storage",e=>{if(e.key==="spriteswap-community-chat")render()});
+  render();
+}
+
 
 function initUpcoming(){
   const items=[["Pacman","Tracked upcoming sprite","hot","Pacman","Base"],["Loot Master Crown","Variant watch","hot","Crown","Loot Hacker"],["Halloween Event","Season event sprite watch","hot","Spooky Dash","Base"],["Mystery Sprite","Details coming soon","hot","Vampire","Base"]];
@@ -202,7 +236,7 @@ function initSettings(){
   document.getElementById("compactMode").onchange=e=>{localStorage.setItem("spriteswap-compact",e.target.checked?"1":"0");document.documentElement.classList.toggle("compact-mode",e.target.checked)};
   document.getElementById("resetSettings").onclick=()=>{localStorage.removeItem("spriteswap-theme");localStorage.removeItem("spriteswap-custom-accent");localStorage.removeItem("spriteswap-reduced-motion");localStorage.removeItem("spriteswap-compact");initSettings()};
 }
-function initSimple(){const p=location.pathname.split("/").pop()||"index.html";if(p==="index.html")return initHome();if(p==="index-page.html")return initIndex();if(p==="trades.html")return initTrades();if(p==="settings.html")return initSettings();if(p==="new.html")return pageShell("New","LATEST","New this week","The newest Season 4 sprite families currently tracked by SpriteSwap.",`<div class="grid">${spriteCards(NEW)}</div>`);if(p==="upcoming.html")return initUpcoming();if(p==="leaderboard.html")return initLeaderboard();if(p==="wishlist.html")return initWishlist();
+function initSimple(){const p=location.pathname.split("/").pop()||"index.html";if(p==="index.html")return initHome();if(p==="index-page.html")return initIndex();if(p==="trades.html")return initTrades();if(p==="chat.html")return initChat();if(p==="settings.html")return initSettings();if(p==="new.html")return pageShell("New","LATEST","New this week","The newest Season 4 sprite families currently tracked by SpriteSwap.",`<div class="grid">${spriteCards(NEW)}</div>`);if(p==="upcoming.html")return initUpcoming();if(p==="leaderboard.html")return initLeaderboard();if(p==="wishlist.html")return initWishlist();
 if(p==="profile.html")return initProfile();if(p==="account.html")return initAccount();if(p==="report.html")return pageShell("Report","SAFETY","Report a problem","Tell the SpriteSwap team about a listing, profile or site issue.",`<div class="hero-card"><label>What happened?</label><textarea class="input" style="width:100%;min-height:140px;margin-top:10px" placeholder="Describe the issue…"></textarea><div class="actions"><button class="btn primary" onclick="alert('Thanks — your report form is ready to connect to the backend.')">Submit report</button></div></div>`);if(p==="rules.html")return pageShell("Rules","COMMUNITY","Community rules","Keep SpriteSwap friendly and useful for everyone.",`<div class="list">${["Be respectful.","No scams or fake trades.","Do not spam listings.","Use the report page for problems.","Have fun trading sprites."].map((x,i)=>`<div class="row"><div class="rank">${i+1}</div><div>${x}</div></div>`).join("")}</div>`);if(p==="community.html")return initCommunity();return initIndex()}
 function safeStart(){
   try{ initSimple(); }
