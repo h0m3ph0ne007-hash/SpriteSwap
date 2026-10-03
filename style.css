@@ -18,3 +18,45 @@
 .setting-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--mint);cursor:pointer}
 .reduce-motion *, .reduce-motion *:before, .reduce-motion *:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
 .compact-mode .card{padding:12px}.compact-mode .section{padding-top:28px;padding-bottom:28px}.compact-mode .art{min-height:140px}
+
+/* Massive trade board + standalone community chat */
+.trades-hero{padding-bottom:24px}
+.trade-board-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}
+.trade-board-head h2{margin:4px 0 0;font-size:30px;letter-spacing:-.03em}
+.post-count{display:inline-grid;place-items:center;min-width:32px;height:24px;padding:0 8px;margin-left:6px;border-radius:999px;background:rgba(98,245,191,.10);color:var(--mint);font-size:12px;vertical-align:middle}
+.post-filters{display:grid;grid-template-columns:minmax(220px,1fr) 240px 180px auto;gap:10px;margin-bottom:18px}
+.trade-post-list{display:grid;gap:12px}
+.trade-post{border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(18,40,32,.96),rgba(10,23,19,.96));overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);transition:.18s transform,.18s border-color}
+.trade-post:hover{transform:translateY(-2px);border-color:rgba(98,245,191,.48)}
+.post-user{display:flex;align-items:center;gap:11px;padding:14px 16px;border-bottom:1px solid rgba(35,72,61,.7)}
+.post-status{font-size:10px;font-weight:900;letter-spacing:.1em;color:var(--mint);padding:5px 8px;border:1px solid rgba(98,245,191,.2);border-radius:999px}
+.post-columns{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.post-columns>div{background:#0d1e19;padding:15px}
+.post-side-title{display:flex;justify-content:space-between;font-size:11px;font-weight:950;letter-spacing:.1em;margin-bottom:10px}
+.post-side-title.get{color:var(--mint)}.post-side-title.give{color:var(--aqua)}
+.post-side-title span{opacity:.55}
+.post-sprites{display:grid;gap:7px}
+.post-sprite{display:flex;align-items:center;gap:9px;min-height:48px;padding:7px;border:1px solid rgba(35,72,61,.8);border-radius:11px;background:rgba(255,255,255,.018)}
+.post-sprite-art{width:42px;height:42px;display:grid;place-items:center;flex:none;overflow:hidden;border-radius:9px;background:#081410}
+.post-sprite-art .art{width:42px;height:42px;min-height:42px!important;aspect-ratio:1;padding:2px}
+.post-sprite-art .art img{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}
+.post-sprite-art .art-label{display:none}
+.post-sprite b{display:block;font-size:12px}.post-sprite small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.post-more,.post-empty{color:var(--muted);font-size:11px;padding:7px 2px}
+.post-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px}
+.post-footer>b{font-size:13px}.post-view{white-space:nowrap}
+.empty-posts{display:grid;gap:4px;text-align:center;padding:40px}
+.trade-post-modal{max-height:90vh;overflow:auto}
+.trade-post-modal label{display:grid;gap:7px;color:var(--muted);font-size:12px;margin:12px 0}
+.trade-post-modal label .input{width:100%;min-width:0}
+.trade-post-modal textarea{min-height:90px;resize:vertical}
+.post-builder{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.post-builder-side{border:1px solid var(--line);border-radius:15px;padding:12px;background:rgba(255,255,255,.018)}
+.post-builder-side .section-head{margin:0 0 10px;align-items:center}.post-builder-side h3{margin:0;font-size:15px}
+.builder-list{display:grid;gap:7px}.builder-row{display:grid;grid-template-columns:1fr 125px 34px;gap:6px}.builder-row .select{min-width:0;padding:9px 8px}.mini-btn.danger{color:var(--red)}
+.chat-page{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px}
+.chat-toolbar{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
+.chat-toolbar .input{min-width:0}
+.chat-page-messages{min-height:480px;max-height:650px}
+@media(max-width:850px){.post-filters{grid-template-columns:1fr 1fr}.post-filters .input{grid-column:1/-1}.post-builder,.chat-page{grid-template-columns:1fr}}
+@media(max-width:560px){.post-filters{grid-template-columns:1fr}.post-columns{grid-template-columns:1fr}.post-footer{align-items:flex-start;flex-direction:column}.post-footer .btn{width:100%}.builder-row{grid-template-columns:1fr 100px 34px}.chat-toolbar{flex-direction:column}.chat-page-messages{min-height:360px}}
