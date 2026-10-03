@@ -12,8 +12,31 @@ function swapImage(img){
   img.remove();
 }
 function isTracked(n,t){return !(n==="Mega Man"&&t!=="Base")}
+function savedList(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
+function toggleSaved(key,id){const a=savedList(key),i=a.indexOf(id);i>=0?a.splice(i,1):a.push(id);localStorage.setItem(key,JSON.stringify(a));return i<0}
 function spriteCards(list=FAMILIES,tier="Base"){
-  return list.filter(n=>isTracked(n,tier)).map(n=>`<article class="card sprite-card"><div class="art">${image(n,tier)}</div><div class="card-body"><span class="badge ${NEW.includes(n)?"new":""}">${NEW.includes(n)?"NEW":"SPRITE"}</span><span class="variant">${esc(tier)}</span><h3>${esc(n)}</h3><p>${tier==="Base"?"Base sprite":esc(tier)+" variant"} · ${CURRENT_SEASON}</p></div></article>`).join("")
+  return list.filter(n=>isTracked(n,tier)).map(n=>{
+    const id=n+"::"+tier,w=savedList("spriteswap-wishlist").includes(id),m=savedList("spriteswap-mastered").includes(id);
+    return `<article class="card sprite-card tier-${slug(tier)}" data-name="${esc(n)}" data-tier="${esc(tier)}"><div class="art dynamic-art">${image(n,tier)}<button class="wish-btn ${w?"saved":""}" data-action="wish" title="Wishlist">${w?"★":"☆"}</button></div><div class="card-body"><span class="badge ${NEW.includes(n)?"new":""}">${NEW.includes(n)?"NEW":"SPRITE"}</span><span class="variant">${esc(tier)}</span><h3>${esc(n)}</h3><p>${tier==="Base"?"Base sprite":esc(tier)+" variant"} · ${CURRENT_SEASON}</p><div class="card-actions"><button class="mini-btn" data-action="details">View details</button><button class="mini-btn mastered-btn ${m?"done":""}" data-action="mastered">${m?"✓ Mastered":"Mark mastered"}</button></div></div></article>`
+  }).join("")
+}
+function bindSpriteActions(){
+  document.querySelectorAll(".sprite-card").forEach(card=>{
+    card.onclick=e=>{
+      const action=e.target.closest("[data-action]")?.dataset.action;
+      const n=card.dataset.name,t=card.dataset.tier,id=n+"::"+t;
+      if(action==="wish"){e.stopPropagation();const now=toggleSaved("spriteswap-wishlist",id);const b=e.target.closest("[data-action]");b.textContent=now?"★":"☆";b.classList.toggle("saved",now);return}
+      if(action==="mastered"){e.stopPropagation();const now=toggleSaved("spriteswap-mastered",id);const b=e.target.closest("[data-action]");b.textContent=now?"✓ Mastered":"Mark mastered";b.classList.toggle("done",now);return}
+      if(action!=="details" && e.target.closest("button"))return;
+      const modal=document.createElement("div");modal.className="modal-backdrop";
+      modal.innerHTML=`<div class="modal"><button class="modal-x">×</button><div class="modal-art">${image(n,t)}</div><div class="kicker">${esc(t)}</div><h2>${esc(n)}</h2><p class="muted">${t==="Base"?"Base sprite":esc(t)+" variant"} · ${CURRENT_SEASON}</p><div class="actions"><button class="btn primary" data-modal="wish">${savedList("spriteswap-wishlist").includes(id)?"★ In wishlist":"☆ Add to wishlist"}</button><button class="btn" data-modal="mastered">${savedList("spriteswap-mastered").includes(id)?"✓ Mastered":"Mark mastered"}</button></div></div>`;
+      document.body.appendChild(modal);
+      modal.querySelector(".modal-x").onclick=()=>modal.remove();
+      modal.onclick=e=>{if(e.target===modal)modal.remove()};
+      modal.querySelector('[data-modal="wish"]').onclick=()=>{const now=toggleSaved("spriteswap-wishlist",id);modal.querySelector('[data-modal="wish"]').textContent=now?"★ In wishlist":"☆ Add to wishlist"};
+      modal.querySelector('[data-modal="mastered"]').onclick=()=>{const now=toggleSaved("spriteswap-mastered",id);modal.querySelector('[data-modal="mastered"]').textContent=now?"✓ Mastered":"Mark mastered"};
+    }
+  })
 }
 function allVariantCards(list=FAMILIES){
   return TIERS.flatMap(t=>list.filter(n=>isTracked(n,t)).map(n=>({n,t}))).map(({n,t})=>`<article class="card sprite-card"><div class="art">${image(n,t)}</div><div class="card-body"><span class="badge ${NEW.includes(n)?"new":""}">${NEW.includes(n)?"NEW":"SPRITE"}</span><span class="variant">${esc(t)}</span><h3>${esc(n)}</h3><p>${t==="Base"?"Base sprite":esc(t)+" variant"} · ${CURRENT_SEASON}</p></div></article>`).join("")
@@ -28,7 +51,7 @@ function initIndex(){
     const t=document.getElementById("tier").value;
     const names=FAMILIES.filter(n=>n.toLowerCase().includes(q));
     document.getElementById("grid").innerHTML=t==="all"?allVariantCards(names):spriteCards(names,t);
-    if(!document.getElementById("grid").innerHTML)document.getElementById("grid").innerHTML=`<div class="notice">No sprites match that search.</div>`;
+    if(!document.getElementById("grid").innerHTML)document.getElementById("grid").innerHTML=`<div class="notice">No sprites match that search.</div>`;bindSpriteActions();
   }
 }
 function pageShell(active,kicker,title,desc,content){layout(title,active,`<main><section class="hero"><div class="shell"><div class="kicker">${kicker}</div><h1>${title}</h1><p>${desc}</p></div></section><section class="section"><div class="shell">${content}</div></section></main>`)}function initHome(){layout("Home","Home",`<main><section class="hero home-hero"><div class="shell hero-grid"><div><div class="kicker">SPRITESWAP / COMMUNITY HUB</div><h1>Trade. Collect.<br><span style="color:var(--mint)">Complete your set.</span></h1><p>Explore sprites, discover variants, keep your wishlist organized, and find your next trade.</p><div class="actions"><a class="btn primary" href="index-page.html">Browse sprites</a><a class="btn" href="trades.html">Explore trades</a></div></div><div class="hero-card feature-sprite"><div class="kicker">FEATURED · ${CURRENT_SEASON}</div>${image("Crown","Gold")}<strong>Gold Crown</strong><p>Featured current variant</p></div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">CURRENT</div><h2>New this season</h2></div><a class="btn" href="new.html">View all</a></div><div class="grid">${spriteCards(NEW,"Base")}</div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">UP NEXT</div><h2>Coming soon</h2></div><a class="btn" href="upcoming.html">See upcoming</a></div><div class="list"><div class="row"><div class="avatar">P</div><div class="grow"><b>Pacman</b><div class="muted">Tracked upcoming sprite</div></div></div><div class="row"><div class="avatar">L</div><div class="grow"><b>Loot Master Crown</b><div class="muted">Variant watch</div></div></div></div></div></section></main>`)}
