@@ -75,3 +75,5 @@
 .trade-post-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:15px 16px;border-bottom:1px solid var(--line)}
 .trade-post-top h3{margin:7px 0 4px}
 @media(max-width:700px){.community-hub-grid{grid-template-columns:1fr}.trade-post-top{flex-direction:column}.trade-post-top .btn{width:100%}}
+
+.sprite-bg{background-image:var(--sprite-bg),linear-gradient(135deg,#10241d,#07110f);background-size:cover,cover;background-position:center}.sprite-bg:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,12,10,.05),rgba(5,12,10,.58));pointer-events:none}.sprite-bg>img{position:relative;z-index:1}.sprite-bg .art-label{position:relative;z-index:2}
