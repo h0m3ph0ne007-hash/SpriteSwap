@@ -10,3 +10,11 @@
 .nav a.active,.nav a:hover{color:var(--text);background:rgba(98,245,191,.09)}
 @media(max-width:900px){.topbar .shell{gap:10px}.nav-cta{display:none}.nav a{padding:8px 7px;font-size:12px}}
 @media(max-width:700px){.topbar{height:auto;min-height:64px}.topbar .shell{padding:10px 0;align-items:flex-start;flex-wrap:wrap}.nav{width:100%;order:3;padding-bottom:2px}.art{min-height:150px}.art img{max-width:150px;max-height:150px}}
+
+/* Settings + accessibility */
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-top:1px solid var(--line)}
+.setting-row span{display:grid;gap:3px}.setting-row small{color:var(--muted)}
+.setting-row input[type=color]{width:52px;height:34px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer}
+.setting-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--mint);cursor:pointer}
+.reduce-motion *, .reduce-motion *:before, .reduce-motion *:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+.compact-mode .card{padding:12px}.compact-mode .section{padding-top:28px;padding-bottom:28px}.compact-mode .art{min-height:140px}
