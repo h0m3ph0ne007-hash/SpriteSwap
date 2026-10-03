@@ -10,17 +10,32 @@ function layout(title,active,content){
 }
 const FAMILIES=["Jonesy","Adventure","Air","Aura","8-Bit","Batman","Birthday","Blinky","Boss","Burnt Peanut","Bush","Crash Bandicoot","Crown","Demon","Dream","Duck","Dumpster Dive","Earth","Fire","Fishy","Ghost","Grim","Ironmouse","Jackrabbit","John Wick","Killswitch","King","Klombo","Llama","Mega Man","Morgana","Onigiri","Overshield","Peeky Peely","Pond","Pollo","Punk","Seven","Shadow","Sonic","Spooky Dash","Storm Scout","Striker","Tails","The Deer","Vampire","Vini Jr.","Water","X-Ray","Zero Point","Peely"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
 const assetSlug=s=>String(s).replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+const SPRITE_ASSET_ALIASES={
+  "Mega Man":["ImprovedSlide","MegaMan","Mega_Man"],
+  "8-Bit":["8Bit","8_Bit"],
+  "Crash Bandicoot":["CrashBandicoot","Crash_Bandicoot"],
+  "Storm Scout":["StormScout","Storm_Scout"],
+  "Spooky Dash":["SpookyDash","Spooky_Dash"],
+  "Dumpster Dive":["DumpsterDive","Dumpster_Dive"],
+  "The Deer":["TheDeer","The_Deer"],
+  "Zero Point":["ZeroPoint","Zero_Point"],
+  "Peeky Peely":["PeekyPeely","Peeky_Peely"],
+  "Vini Jr.":["ViniJr","Vini_Jr"]
+};
 const imageCandidates=(name,tier="Base")=>{
-  const n=assetSlug(name),variant=tier==="Base"?"":assetSlug(tier)+"_";
-  return [
-    `https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${n}_${variant}L.webp`,
-    ...tierSlugs(tier).map(v=>`https://api.spritetrading.com/sprites/${v?`${slug(name)}-${v}`:slug(name)}.webp?w=640`),
-    `https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${n}_L.webp`
-  ];
+  const aliases=SPRITE_ASSET_ALIASES[name]||[assetSlug(name),slug(name).replace(/-/g,"_")];
+  const variants=tier==="Base"?[""]:tierSlugs(tier);
+  const urls=[];
+  aliases.forEach(a=>variants.forEach(v=>{
+    if(v) urls.push(`https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${a}_${v}_L.webp`);
+    else urls.push(`https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${a}_L.webp`);
+  }));
+  tierSlugs(tier).forEach(v=>urls.push(`https://api.spritetrading.com/sprites/${v?`${slug(name)}-${v}`:slug(name)}.webp?w=640`));
+  return [...new Set(urls)];
 };
 const image=(name,tier="Base",cls="")=>{
   const candidates=imageCandidates(name,tier);
-  return `<div class="art dynamic-art ${cls}" data-fallbacks='${esc(JSON.stringify(candidates))}'><img src="${candidates[0]}" alt="${esc(name)} ${esc(tier)}" loading="lazy" onerror="swapImage(this)" onload="this.classList.add('loaded')"><div class="art-label">${esc(name)}</div></div>`;
+  return `<div class="art dynamic-art ${cls}" data-fallbacks='${esc(JSON.stringify(candidates))}'><img src="${candidates[0]}" alt="${esc(name)} ${esc(tier)}" loading="lazy" onerror="swapImage(this)" onload="this.classList.add("loaded")"><div class="art-label">${esc(name)}</div></div>`;
 };
 function swapImage(img){try{const box=img.closest("[data-fallbacks]"),list=JSON.parse(box?.dataset.fallbacks||"[]"),i=Number(img.dataset.fallbackIndex||0)+1;if(i<list.length){img.dataset.fallbackIndex=i;img.src=list[i];return}box?.classList.add("missing-art");img.style.display="none"}catch(e){img.style.display="none"}}
 function savedList(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
