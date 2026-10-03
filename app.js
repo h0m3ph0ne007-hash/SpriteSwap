@@ -15,7 +15,23 @@ function isTracked(n,t){return FAMILIES.includes(n)&&TIERS.includes(t);}
 function spriteSeason(name){if(SEASON_4.includes(name)||FAMILIES.includes(name))return "Chapter 7 Season 4";return "Unknown";}
 function spriteRarity(name){return (["Crown","John Wick","Mega Man","Vini Jr."].includes(name)?"Legendary":["Batman","Sonic","Tails","Crash Bandicoot","Ironmouse"].includes(name)?"Epic":"Rare");}
 function variantAssetNames(name,tier){var aliases=ALIASES[name]||[assetSlug(name),slug(name).replace(/-/g,"_")],out=[];aliases.forEach(function(a){if(tier==="Base")out.push(a);else tierSlugs(tier).forEach(function(v){out.push(a+"_"+v);});});return Array.from(new Set(out));}
-function imageCandidates(name,tier){var t=tier||"Base",out=[],wanted=String(name||"").trim(),variantMap={"Base":["base"],"Gold":["gold"],"Cheat Master":["cheatmaster"],"Loot Hacker":["loothacker"],"Bounty Hunter":["bountyhunter"],"Trick or Treat":["trickortreat"]};var aliases=ALIASES[wanted]||[wanted,assetSlug(wanted),slug(wanted).replace(/-/g,"_")];var parents={"Fire":"Spitfire","Dream":"Sleepy","Vini Jr.":"Soccer","Striker":"Drifter","8-Bit":"EightBitBlaster","Jackrabbit":"JazzJackrabbit","Bush":"BushRanger","The Deer":"NarrowFleaScribe","Sonic":"NarrowFleaMonkey","Shadow":"NarrowFleaObsidian"};if(parents[wanted])aliases.push(parents[wanted]);var variants=variantMap[t]||[slug(t).replace(/-/g,"")];if(window.SPRITE_MANIFEST){window.SPRITE_MANIFEST.forEach(function(x){if(aliases.indexOf(x.parent)>=0 && variants.indexOf(String(x.variant).toLowerCase())>=0)out.push(x.url);});}aliases.forEach(function(a){variants.forEach(function(v){var suffix=v==="base"?"":"_"+v;out.push("https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_"+a+suffix+"_L.webp");out.push("https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_"+a+suffix+".webp");});});if(t!=="Base")tierSlugs(t).forEach(function(v){out.push("https://api.spritetrading.com/sprites/"+slug(wanted)+"-"+slug(v)+".webp?w=640");});out.push("https://api.spritetrading.com/sprites/"+slug(wanted)+".webp?w=640");return Array.from(new Set(out));}
+function imageCandidates(name,tier){
+  var t=tier||"Base",wanted=String(name||"").trim(),out=[];
+  var parents={"Fire":"Spitfire","Dream":"Sleepy","Vini Jr.":"Soccer","Striker":"Drifter","8-Bit":"EightBitBlaster","Jackrabbit":"JazzJackrabbit","Bush":"BushRanger","The Deer":"NarrowFleaScribe","Sonic":"NarrowFleaMonkey","Shadow":"NarrowFleaObsidian"};
+  var parent=parents[wanted]||wanted;
+  var variants={"Base":"base","Gold":"gold","Cheat Master":"cheatmaster","Loot Hacker":"loothacker","Bounty Hunter":"bountyhunter","Trick or Treat":"trickortreat"};
+  var variant=(variants[t]||"base").toLowerCase();
+  if(window.SPRITE_MANIFEST){
+    window.SPRITE_MANIFEST.forEach(function(x){
+      if(String(x.season).toLowerCase()!=="c7s4")return;
+      if(String(x.parent).toLowerCase()===String(parent).toLowerCase() && String(x.variant).toLowerCase()===variant)out.push(x.url);
+    });
+  }
+  if(!out.length && variant==="base"){
+    out.push("https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_"+assetSlug(parent)+"_L.webp");
+  }
+  return Array.from(new Set(out));
+}
 function swapImage(img){
   try{var box=img.closest("[data-fallbacks]"),list=JSON.parse(box.getAttribute("data-fallbacks")||"[]"),i=Number(img.getAttribute("data-fallback-index")||0)+1;
     if(i<list.length){img.setAttribute("data-fallback-index",i);img.src=list[i];return;}
