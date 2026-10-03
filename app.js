@@ -1,254 +1,198 @@
-function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-function isTracked(name,tier="Base"){return FAMILIES.includes(name)&&TIERS.includes(tier)}
-function moderationStatus(){const m=moderationData();if(m.lifetime)return "Lifetime restriction";if(m.bannedUntil>Date.now())return "24-hour restriction";return (m.warnings||0)+"/3 warnings"}
-function layout(title,active,content){
-  const nav=[["Home","index.html"],["Sprites","index-page.html"],["New","new.html"],["Trades","trades.html"],["Chat","chat.html"],["Upcoming","upcoming.html"],["Wishlist","wishlist.html"],["Community","community.html"],["Leaderboard","leaderboard.html"],["Profile","profile.html"],["Settings","settings.html"]];
-  document.title=title+" · SpriteSwap";
-  const app=document.getElementById("app");
-  if(!app) throw new Error("SpriteSwap app root is missing");
-  app.innerHTML=`<header class="topbar"><div class="shell"><a class="brand" href="index.html"><span class="mark">S</span><span>SpriteSwap</span></a><nav class="nav">${nav.map(([n,h])=>`<a class="${n===active?"active":""}" href="${h}">${n}</a>`).join("")}</nav><a class="btn nav-cta" href="trades.html">Trade</a></div></header>${content}<footer class="footer"><div class="shell"><b>SpriteSwap</b><span>Community sprite trading hub</span></div></footer>`;
+const FAMILIES=["Jonesy","Adventure","Air","Aura","8-Bit","Batman","Birthday","Blinky","Boss","Burnt Peanut","Bush","Crash Bandicoot","Crown","Demon","Dream","Duck","Dumpster Dive","Earth","Fire","Fishy","Ghost","Grim","Ironmouse","Jackrabbit","John Wick","Killswitch","King","Klombo","Llama","Mega Man","Morgana","Onigiri","Overshield","Peeky Peely","Pond","Pollo","Punk","Seven","Shadow","Sonic","Spooky Dash","Storm Scout","Striker","Tails","The Deer","Vampire","Vini Jr.","Water","X-Ray","Zero Point","Peely","Pacman"];
+const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];
+const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive","Pacman"];
+const CURRENT_SEASON="Chapter 7 Season 4";
+const ALIASES={"Mega Man":["ImprovedSlide","MegaMan","Mega_Man"],"8-Bit":["8Bit","8_Bit"],"Crash Bandicoot":["CrashBandicoot","Crash_Bandicoot"],"Storm Scout":["StormScout","Storm_Scout"],"Spooky Dash":["SpookyDash","Spooky_Dash"],"Dumpster Dive":["DumpsterDive","Dumpster_Dive"],"The Deer":["TheDeer","The_Deer"],"Zero Point":["ZeroPoint","Zero_Point"],"Peeky Peely":["PeekyPeely","Peeky_Peely"],"Vini Jr.":["ViniJr","Vini_Jr"],"Pacman":["Pacman","Pac_Man"]};
+
+function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+function slug(v){return String(v).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+function assetSlug(v){return String(v).replace(/[^A-Za-z0-9]+/g,"");}
+function tierSlugs(t){return ({Gold:["Gold"],"Cheat Master":["CheatMaster","Cheat_Master"],"Loot Hacker":["LootHacker","Loot_Hacker"],"Bounty Hunter":["BountyHunter","Bounty_Hunter"],"Trick or Treat":["TrickOrTreat","Trick_or_Treat"]}[t]||[]);}
+function isTracked(n,t){return FAMILIES.includes(n)&&TIERS.includes(t);}
+function imageCandidates(name,tier){
+  var aliases=ALIASES[name]||[assetSlug(name),slug(name).replace(/-/g,"_")],out=[];
+  var vars=tier==="Base"?[""]:tierSlugs(tier);
+  aliases.forEach(function(a){vars.forEach(function(v){out.push("https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_"+a+(v?"_"+v:"")+"_L.webp");});});
+  tierSlugs(tier).forEach(function(v){out.push("https://api.spritetrading.com/sprites/"+slug(name)+"-"+v+".webp?w=640");});
+  out.push("https://api.spritetrading.com/sprites/"+slug(name)+".webp?w=640");
+  return Array.from(new Set(out));
 }
-const FAMILIES=["Jonesy","Adventure","Air","Aura","8-Bit","Batman","Birthday","Blinky","Boss","Burnt Peanut","Bush","Crash Bandicoot","Crown","Demon","Dream","Duck","Dumpster Dive","Earth","Fire","Fishy","Ghost","Grim","Ironmouse","Jackrabbit","John Wick","Killswitch","King","Klombo","Llama","Mega Man","Morgana","Onigiri","Overshield","Peeky Peely","Pond","Pollo","Punk","Seven","Shadow","Sonic","Spooky Dash","Storm Scout","Striker","Tails","The Deer","Vampire","Vini Jr.","Water","X-Ray","Zero Point","Peely"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
-const assetSlug=s=>String(s).replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
-const SPRITE_ASSET_ALIASES={
-  "Mega Man":["ImprovedSlide","MegaMan","Mega_Man"],
-  "8-Bit":["8Bit","8_Bit"],
-  "Crash Bandicoot":["CrashBandicoot","Crash_Bandicoot"],
-  "Storm Scout":["StormScout","Storm_Scout"],
-  "Spooky Dash":["SpookyDash","Spooky_Dash"],
-  "Dumpster Dive":["DumpsterDive","Dumpster_Dive"],
-  "The Deer":["TheDeer","The_Deer"],
-  "Zero Point":["ZeroPoint","Zero_Point"],
-  "Peeky Peely":["PeekyPeely","Peeky_Peely"],
-  "Vini Jr.":["ViniJr","Vini_Jr"]
-};
-const imageCandidates=(name,tier="Base")=>{
-  const aliases=SPRITE_ASSET_ALIASES[name]||[assetSlug(name),slug(name).replace(/-/g,"_")];
-  const variants=tier==="Base"?[""]:tierSlugs(tier);
-  const urls=[];
-  aliases.forEach(a=>variants.forEach(v=>{
-    if(v) urls.push(`https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${a}_${v}_L.webp`);
-    else urls.push(`https://fortnite.gg/img/x/sprites/icons/T_Icon_BR_Creature_Sprite_${a}_L.webp`);
-  }));
-  tierSlugs(tier).forEach(v=>urls.push(`https://api.spritetrading.com/sprites/${v?`${slug(name)}-${v}`:slug(name)}.webp?w=640`));
-  return [...new Set(urls)];
-};
-const image=(name,tier="Base",cls="")=>{
-  const candidates=imageCandidates(name,tier);
-  return `<div class="art dynamic-art ${cls}" data-fallbacks='${esc(JSON.stringify(candidates))}'><img src="${candidates[0]}" alt="${esc(name)} ${esc(tier)}" loading="lazy" onerror="swapImage(this)" onload="this.classList.add("loaded")"><div class="art-label">${esc(name)}</div></div>`;
-};
-function swapImage(img){try{const box=img.closest("[data-fallbacks]"),list=JSON.parse(box?.dataset.fallbacks||"[]"),i=Number(img.dataset.fallbackIndex||0)+1;if(i<list.length){img.dataset.fallbackIndex=i;img.src=list[i];return}box?.classList.add("missing-art");img.style.display="none"}catch(e){img.style.display="none"}}
-function savedList(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
-function toggleSaved(key,id){const a=savedList(key),i=a.indexOf(id);i>=0?a.splice(i,1):a.push(id);localStorage.setItem(key,JSON.stringify(a));return i<0}
-function spriteCards(list=FAMILIES,tier="Base"){
-  return list.filter(n=>isTracked(n,tier)).map(n=>{
-    const id=n+"::"+tier,w=savedList("spriteswap-wishlist").includes(id),m=savedList("spriteswap-mastered").includes(id);
-    return `<article class="card sprite-card tier-${slug(tier)}" data-name="${esc(n)}" data-tier="${esc(tier)}">${image(n,tier)}<button class="wish-btn ${w?"saved":""}" data-action="wish" title="Wishlist">${w?"★":"☆"}</button><div class="card-body"><span class="badge ${NEW.includes(n)?"new":""}">${NEW.includes(n)?"NEW":"SPRITE"}</span><span class="variant">${esc(tier)}</span><h3>${esc(n)}</h3><p>${tier==="Base"?"Base sprite":esc(tier)+" variant"} · ${CURRENT_SEASON}</p><div class="card-actions"><button class="mini-btn" data-action="details">View details</button><button class="mini-btn mastered-btn ${m?"done":""}" data-action="mastered">${m?"✓ Mastered":"Mark mastered"}</button></div></div></article>`
-  }).join("")
+function swapImage(img){
+  try{var box=img.closest("[data-fallbacks]"),list=JSON.parse(box.getAttribute("data-fallbacks")||"[]"),i=Number(img.getAttribute("data-fallback-index")||0)+1;
+    if(i<list.length){img.setAttribute("data-fallback-index",i);img.src=list[i];return;}
+    img.style.display="none";if(box)box.classList.add("missing-art");
+  }catch(e){img.style.display="none";}
+}
+function image(name,tier,cls){
+  var list=imageCandidates(name,tier||"Base");
+  return '<div class="art dynamic-art '+(cls||"")+'" data-fallbacks="'+esc(JSON.stringify(list))+'"><img src="'+esc(list[0])+'" alt="'+esc(name)+" "+esc(tier||"Base")+'" loading="lazy" onerror="swapImage(this)" onload="this.classList.add(\'loaded\')"><div class="art-label">'+esc(name)+'</div></div>';
+}
+function layout(title,active,content){
+  var nav=[["Home","index.html"],["Sprites","index-page.html"],["New","new.html"],["Trades","trades.html"],["Chat","chat.html"],["Upcoming","upcoming.html"],["Wishlist","wishlist.html"],["Community","community.html"],["Leaderboard","leaderboard.html"],["Profile","profile.html"],["Settings","settings.html"]];
+  document.title=title+" · SpriteSwap";
+  var app=document.getElementById("app");
+  if(!app)throw new Error("SpriteSwap app root is missing");
+  var links=nav.map(function(x){return '<a class="'+(x[0]===active?"active":"")+'" href="'+x[1]+'">'+x[0]+"</a>";}).join("");
+  app.innerHTML='<header class="topbar"><div class="shell"><a class="brand" href="index.html"><span class="mark">S</span><span>SpriteSwap</span></a><nav class="nav">'+links+'</nav><a class="btn nav-cta" href="trades.html">Trade</a></div></header>'+content+'<footer class="footer"><div class="shell"><b>SpriteSwap</b><span>Community sprite trading hub</span></div></footer>';
+}
+function pageShell(active,kicker,title,desc,content){layout(title,active,'<main><section class="hero"><div class="shell"><div class="kicker">'+kicker+'</div><h1>'+title+'</h1><p>'+desc+'</p></div></section><section class="section"><div class="shell">'+content+"</div></section></main>");}
+function savedList(key){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(e){return [];}}
+function saveList(key,list){localStorage.setItem(key,JSON.stringify(Array.from(new Set(list))));}
+function profileData(){try{return JSON.parse(localStorage.getItem("spriteswap-profile")||"{}");}catch(e){return {};}}
+function moderationData(){try{return JSON.parse(localStorage.getItem("spriteswap-moderation")||'{"warnings":0,"bannedUntil":0,"lifetime":false}');}catch(e){return {warnings:0,bannedUntil:0,lifetime:false};}}
+function moderationStatus(){var m=moderationData();if(m.lifetime)return "Lifetime restriction";if(m.bannedUntil>Date.now())return "24-hour restriction";return (m.warnings||0)+"/3 warnings";}
+function tradePosts(){try{return JSON.parse(localStorage.getItem("spriteswap-trade-posts")||"[]");}catch(e){return [];}}
+function saveTradePosts(a){localStorage.setItem("spriteswap-trade-posts",JSON.stringify(a));window.dispatchEvent(new Event("spriteswap-posts-changed"));}
+function tradeTime(t){var d=new Date(t||Date.now());return d.toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
+function postSpriteOptions(){return FAMILIES.map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+"</option>";}).join("");}
+function spriteCards(names,tier){
+  var list=names||FAMILIES, t=tier||"Base";
+  return list.map(function(n){return '<article class="card sprite-card tier-'+slug(t)+'" data-name="'+esc(n)+'" data-tier="'+esc(t)+'">'+image(n,t)+'<div class="card-body"><span class="badge">'+esc(t)+'</span><h3>'+esc(n)+'</h3><p>'+esc(t==="Base"?"Base sprite":t+" variant")+' · '+CURRENT_SEASON+'</p><div class="card-actions"><button class="mini-btn" data-wishlist="'+esc(n)+'::'+esc(t)+'">Wishlist</button><button class="mini-btn" data-master="'+esc(n)+'::'+esc(t)+'">Mastered</button><button class="mini-btn" data-details="'+esc(n)+'::'+esc(t)+'">Details</button></div></div></article>';}).join("");
+}
+function allVariantCards(names){
+  var list=names||FAMILIES,html="";
+  list.forEach(function(n){TIERS.forEach(function(t){if(isTracked(n,t))html+=spriteCards([n],t);});});
+  return html;
 }
 function bindSpriteActions(){
-  document.querySelectorAll(".sprite-card").forEach(card=>{
-    card.onclick=e=>{
-      const action=e.target.closest("[data-action]")?.dataset.action;
-      const n=card.dataset.name,t=card.dataset.tier,id=n+"::"+t;
-      if(action==="wish"){e.stopPropagation();const now=toggleSaved("spriteswap-wishlist",id);const b=e.target.closest("[data-action]");b.textContent=now?"★":"☆";b.classList.toggle("saved",now);return}
-      if(action==="mastered"){e.stopPropagation();const now=toggleSaved("spriteswap-mastered",id);const b=e.target.closest("[data-action]");b.textContent=now?"✓ Mastered":"Mark mastered";b.classList.toggle("done",now);return}
-      if(action!=="details" && e.target.closest("button"))return;
-      const modal=document.createElement("div");modal.className="modal-backdrop";
-      modal.innerHTML=`<div class="modal"><button class="modal-x">×</button><div class="modal-art">${image(n,t)}</div><div class="kicker">${esc(t)}</div><h2>${esc(n)}</h2><p class="muted">${t==="Base"?"Base sprite":esc(t)+" variant"} · ${CURRENT_SEASON}</p><div class="actions"><button class="btn primary" data-modal="wish">${savedList("spriteswap-wishlist").includes(id)?"★ In wishlist":"☆ Add to wishlist"}</button><button class="btn" data-modal="mastered">${savedList("spriteswap-mastered").includes(id)?"✓ Mastered":"Mark mastered"}</button></div></div>`;
-      document.body.appendChild(modal);
-      modal.querySelector(".modal-x").onclick=()=>modal.remove();
-      modal.onclick=e=>{if(e.target===modal)modal.remove()};
-      modal.querySelector('[data-modal="wish"]').onclick=()=>{const now=toggleSaved("spriteswap-wishlist",id);modal.querySelector('[data-modal="wish"]').textContent=now?"★ In wishlist":"☆ Add to wishlist"};
-      modal.querySelector('[data-modal="mastered"]').onclick=()=>{const now=toggleSaved("spriteswap-mastered",id);modal.querySelector('[data-modal="mastered"]').textContent=now?"✓ Mastered":"Mark mastered"};
-    }
-  })
+  document.querySelectorAll("[data-wishlist]").forEach(function(b){b.onclick=function(){var a=savedList("spriteswap-wishlist"),id=b.getAttribute("data-wishlist");if(!a.includes(id))a.push(id);saveList("spriteswap-wishlist",a);b.textContent="Saved";};});
+  document.querySelectorAll("[data-master]").forEach(function(b){b.onclick=function(){var a=savedList("spriteswap-mastered"),id=b.getAttribute("data-master");if(!a.includes(id))a.push(id);saveList("spriteswap-mastered",a);b.textContent="Mastered";};});
+  document.querySelectorAll("[data-details]").forEach(function(b){b.onclick=function(){var p=b.getAttribute("data-details").split("::");showSpriteDetails(p[0],p[1]||"Base");};});
 }
-function allVariantCards(list=FAMILIES){
-  return TIERS.flatMap(t=>list.filter(n=>isTracked(n,t)).map(n=>({n,t}))).map(({n,t})=>spriteCards([n],t)).join("")
+function showSpriteDetails(name,tier){
+  var modal=document.createElement("div");modal.className="modal-backdrop";
+  modal.innerHTML='<div class="modal"><button class="modal-x">×</button>'+image(name,tier,"large-art")+'<div class="kicker">SPRITE DETAILS</div><h2>'+esc(name)+'</h2><p class="muted">'+esc(tier)+' · '+CURRENT_SEASON+'</p><p>Track this sprite, add it to your wishlist, mark it mastered, or use the trade board to find someone offering it.</p><div class="actions"><button class="btn primary" id="mdWish">Wishlist</button><a class="btn" href="trades.html">Find trades</a></div></div>';
+  document.body.appendChild(modal);modal.querySelector(".modal-x").onclick=function(){modal.remove();};
+  modal.querySelector("#mdWish").onclick=function(){var a=savedList("spriteswap-wishlist"),id=name+"::"+tier;if(!a.includes(id))a.push(id);saveList("spriteswap-wishlist",a);this.textContent="Saved";};
+}
+function initHome(){
+  layout("Home","Home",'<main><section class="hero home-hero"><div class="shell hero-grid"><div><div class="kicker">SPRITESWAP / COMMUNITY HUB</div><h1>Trade. Collect.<br><span style="color:var(--mint)">Complete your set.</span></h1><p>Browse real sprite artwork, post trades, manage your wishlist and talk with other collectors.</p><div class="actions"><a class="btn primary" href="index-page.html">Browse sprites</a><a class="btn" href="trades.html">Find a trade</a><a class="btn" href="chat.html">Community chat</a></div></div><div class="hero-card feature-sprite"><div class="kicker">FEATURED · '+CURRENT_SEASON+'</div>'+image("Crown","Gold")+'<strong>Gold Crown</strong><p>Featured variant</p></div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">NEW</div><h2>New this season</h2></div><a class="btn" href="new.html">View all</a></div><div class="grid">'+spriteCards(NEW,"Base")+'</div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">TRADE BOARD</div><h2>Fresh activity</h2></div><a class="btn" href="trades.html">Open board</a></div><div class="list"><div class="row"><div class="avatar">P</div><div class="grow"><b>Pacman</b><div class="muted">New sprite watch</div></div></div><div class="row"><div class="avatar">T</div><div class="grow"><b>Trade smarter</b><div class="muted">Open a listing, inspect it, then accept to start a private trade chat.</div></div></div></div></div></section></main>');
+  bindSpriteActions();
 }
 function initIndex(){
-  const count=TIERS.reduce((sum,t)=>sum+FAMILIES.filter(n=>isTracked(n,t)).length,0);
-  layout("Sprite Index","Sprites",`<main><section class="hero"><div class="shell hero-grid"><div><div class="kicker">SpriteSwap / Index</div><h1>Every sprite.<br><span style="color:var(--mint)">Real icons.</span></h1><p>A clean, community-first catalog with every tracked Season 4 family and variant. Sprite art loads from the live Sprite Trading image endpoint with automatic naming fallbacks.</p><div class="actions"><a class="btn primary" href="trades.html">Find a trade</a><a class="btn" href="new.html">See what's new</a></div></div><div class="hero-card"><div class="kicker">CATALOG</div><strong>${count}</strong><p>tracked Season 4 family/variant entries</p></div></div></section><section class="section"><div class="shell"><div class="section-head"><div><h2>${CURRENT_SEASON} catalog</h2><div class="muted">All tracked families, all tracked variant finishes, with real sprite icons.</div></div></div><div class="tools"><input id="search" class="input" placeholder="Search sprites…"><select id="tier" class="select"><option value="all">All variants</option>${TIERS.map(t=>`<option>${t}</option>`).join("")}</select></div><div class="stats"><div class="stat"><b>${count}</b><span>Tracked variants</span></div><div class="stat"><b>${FAMILIES.length}</b><span>Season 4 families</span></div><div class="stat"><b>${NEW.length}</b><span>Recent additions</span></div><div class="stat"><b>REAL</b><span>Sprite artwork</span></div></div><div id="grid" class="grid">${allVariantCards()}</div></div></section></main>`);
-  document.getElementById("search").oninput=render;
-  document.getElementById("tier").onchange=render;bindSpriteActions();
-  function render(){
-    const q=document.getElementById("search").value.toLowerCase().trim();
-    const t=document.getElementById("tier").value;
-    const names=FAMILIES.filter(n=>n.toLowerCase().includes(q));
-    document.getElementById("grid").innerHTML=t==="all"?allVariantCards(names):spriteCards(names,t);
-    if(!document.getElementById("grid").innerHTML)document.getElementById("grid").innerHTML=`<div class="notice">No sprites match that search.</div>`;bindSpriteActions();
-  }
+  var count=TIERS.reduce(function(s,t){return s+FAMILIES.filter(function(n){return isTracked(n,t);}).length;},0);
+  layout("Sprite Index","Sprites",'<main><section class="hero"><div class="shell hero-grid"><div><div class="kicker">SPRITESWAP / INDEX</div><h1>Every sprite.<br><span style="color:var(--mint)">Real icons.</span></h1><p>Browse tracked families and variants with live artwork fallbacks.</p><div class="actions"><a class="btn primary" href="trades.html">Find a trade</a><a class="btn" href="new.html">New sprites</a></div></div><div class="hero-card"><div class="kicker">CATALOG</div><strong>'+count+'</strong><p>tracked family/variant entries</p></div></div></section><section class="section"><div class="shell"><div class="tools"><input id="search" class="input" placeholder="Search sprites…"><select id="tier" class="select"><option value="all">All variants</option>'+TIERS.map(function(t){return "<option>"+esc(t)+"</option>";}).join("")+'</select></div><div class="stats"><div class="stat"><b>'+count+'</b><span>Tracked variants</span></div><div class="stat"><b>'+FAMILIES.length+'</b><span>Sprite families</span></div><div class="stat"><b>'+NEW.length+'</b><span>Recent additions</span></div><div class="stat"><b>LIVE</b><span>Artwork fallbacks</span></div></div><div id="grid" class="grid">'+allVariantCards()+"</div></div></section></main>");
+  function render(){var q=document.getElementById("search").value.toLowerCase().trim(),t=document.getElementById("tier").value,n=FAMILIES.filter(function(x){return x.toLowerCase().includes(q);});document.getElementById("grid").innerHTML=t==="all"?allVariantCards(n):spriteCards(n,t);if(!document.getElementById("grid").innerHTML)document.getElementById("grid").innerHTML='<div class="notice">No sprites match.</div>';bindSpriteActions();}
+  document.getElementById("search").oninput=render;document.getElementById("tier").onchange=render;bindSpriteActions();
 }
-function pageShell(active,kicker,title,desc,content){layout(title,active,`<main><section class="hero"><div class="shell"><div class="kicker">${kicker}</div><h1>${title}</h1><p>${desc}</p></div></section><section class="section"><div class="shell">${content}</div></section></main>`)}function initHome(){layout("Home","Home",`<main><section class="hero home-hero"><div class="shell hero-grid"><div><div class="kicker">SPRITESWAP / COMMUNITY HUB</div><h1>Trade. Collect.<br><span style="color:var(--mint)">Complete your set.</span></h1><p>Explore sprites, discover variants, keep your wishlist organized, and find your next trade.</p><div class="actions"><a class="btn primary" href="index-page.html">Browse sprites</a><a class="btn" href="trades.html">Explore trades</a></div></div><div class="hero-card feature-sprite"><div class="kicker">FEATURED · ${CURRENT_SEASON}</div>${image("Crown","Gold")}<strong>Gold Crown</strong><p>Featured current variant</p></div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">CURRENT</div><h2>New this season</h2></div><a class="btn" href="new.html">View all</a></div><div class="grid">${spriteCards(NEW,"Base")}</div></div></section><section class="section"><div class="shell"><div class="section-head"><div><div class="kicker">UP NEXT</div><h2>Coming soon</h2></div><a class="btn" href="upcoming.html">See upcoming</a></div><div class="list"><div class="row"><div class="avatar">P</div><div class="grow"><b>Pacman</b><div class="muted">Tracked upcoming sprite</div></div></div><div class="row"><div class="avatar">L</div><div class="grow"><b>Loot Master Crown</b><div class="muted">Variant watch</div></div></div></div></div></section></main>`)}
-function applyStoredSettings(){
-  const themes={mint:["#07110f","#10231e","#62f5bf","#c7ff55"],blue:["#07101b","#10213a","#5bbcff","#78f0ff"],purple:["#10091a","#231535","#c68cff","#f2a8ff"],orange:["#170d07","#2b1b10","#ffb35c","#ffd166"]};
-  const k=localStorage.getItem("spriteswap-theme")||"mint",t=themes[k]||themes.mint,custom=localStorage.getItem("spriteswap-custom-accent");
-  document.documentElement.style.setProperty("--bg",t[0]);document.documentElement.style.setProperty("--bg2",t[0]);document.documentElement.style.setProperty("--panel",t[1]);document.documentElement.style.setProperty("--mint",custom||t[2]);document.documentElement.style.setProperty("--lime",t[3]);document.documentElement.style.setProperty("--aqua",custom||t[2]);
-  document.documentElement.classList.toggle("reduce-motion",localStorage.getItem("spriteswap-reduced-motion")==="1");
-  document.documentElement.classList.toggle("compact-mode",localStorage.getItem("spriteswap-compact")==="1");
-}
-applyStoredSettings();
-function initWishlist(){
-  const render=()=>{
-    const wanted=savedList("spriteswap-wishlist"), mastered=savedList("spriteswap-mastered");
-    const make=(ids,kind)=>ids.map(id=>{const [n,t]=id.split("::");if(!n||!FAMILIES.includes(n)||!isTracked(n,t))return "";return `<article class="card sprite-card tier-${slug(t)}" data-name="${esc(n)}" data-tier="${esc(t)}">${image(n,t)}<div class="card-body"><span class="badge ${kind==="mastered"?"new":""}">${kind==="mastered"?"MASTERED":"WISHLIST"}</span><span class="variant">${esc(t)}</span><h3>${esc(n)}</h3><p>${t==="Base"?"Base sprite":esc(t)+" variant"} · ${CURRENT_SEASON}</p><div class="card-actions"><button class="mini-btn" data-remove="${kind}">Remove</button></div></div></article>`}).join("");
-    layout("Wishlist","Wishlist",`<main><section class="hero"><div class="shell"><div class="kicker">YOUR COLLECTION</div><h1>Wishlist &<br><span style="color:var(--mint)">Mastered.</span></h1><p>Your saved sprites stay in this browser. Build your wishlist, then mark the sprites you own as mastered.</p></div></section><section class="section"><div class="shell"><div class="stats"><div class="stat"><b>${wanted.length}</b><span>Wishlist</span></div><div class="stat"><b>${mastered.length}</b><span>Mastered</span></div><div class="stat"><b>${FAMILIES.length}</b><span>Families</span></div><div class="stat"><b>${Math.round((mastered.length/Math.max(1,TIERS.reduce((sum,t)=>sum+FAMILIES.filter(n=>isTracked(n,t)).length,0)))*100)}%</b><span>Tracked completion</span></div></div><div class="section-head"><div><h2>Wishlist</h2><div class="muted">Sprites you want to trade for.</div></div><a class="btn" href="index-page.html">Browse sprites</a></div><div id="wishGrid" class="grid">${make(wanted,"wishlist")||'<div class="notice">Nothing here yet. Add sprites from the index.</div>'}</div><div class="section-head" style="margin-top:42px"><div><h2>Mastered</h2><div class="muted">Sprites you've marked as collected.</div></div></div><div id="masteredGrid" class="grid">${make(mastered,"mastered")||'<div class="notice">No mastered sprites yet.</div>'}</div></div></section></main>`);
-    document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{const card=b.closest(".sprite-card"),id=card.dataset.name+"::"+card.dataset.tier;toggleSaved(b.dataset.remove==="wishlist"?"spriteswap-wishlist":"spriteswap-mastered",id);render()});
-  };
-  render();
-}
-function tradeData(){try{return JSON.parse(localStorage.getItem("spriteswap-trades")||"[]")}catch(e){return[]}}
-function saveTrades(a){localStorage.setItem("spriteswap-trades",JSON.stringify(a))}
-function moderationData(){try{return JSON.parse(localStorage.getItem("spriteswap-moderation")||'{"warnings":0,"bannedUntil":0,"lifetime":false,"reports":[]}')}catch(e){return {warnings:0,bannedUntil:0,lifetime:false,reports:[]}}}
-function saveModeration(x){localStorage.setItem("spriteswap-moderation",JSON.stringify(x))}
-function moderationCheck(text){const s=String(text||"").toLowerCase();return [/spam/i,/scam/i,/phish/i,/threat/i,/harass/i,/hate/i,/slur/i,/cheat code/i].some(r=>r.test(s))}
-function issueWarning(reason){const m=moderationData();m.warnings=(m.warnings||0)+1;m.lastReason=reason;if(m.warnings>=3)m.bannedUntil=Date.now()+86400000;if(m.warnings>=6){m.lifetime=true;m.bannedUntil=0}saveModeration(m);return m}
-function isBanned(){const m=moderationData();if(m.lifetime)return true;if(m.bannedUntil>Date.now())return true;if(m.bannedUntil){m.bannedUntil=0;saveModeration(m)}return false}
-function botMessage(){const m=moderationData();if(m.lifetime)return "Safety Bot: lifetime restriction is active.";if(m.bannedUntil>Date.now())return "Safety Bot: 24-hour restriction is active.";return m.warnings?("Safety Bot: "+m.warnings+"/3 warnings."): "Safety Bot: good standing."}
-function tradePosts(){try{return JSON.parse(localStorage.getItem("spriteswap-trade-posts")||"[]")}catch(e){return[]}}
-function saveTradePosts(a){localStorage.setItem("spriteswap-trade-posts",JSON.stringify(a))}
-function tradeTime(ts){const d=Math.max(0,Date.now()-(ts||Date.now()));const m=Math.floor(d/60000);if(m<1)return"just now";if(m<60)return m+"m ago";const h=Math.floor(m/60);if(h<24)return h+"h ago";return Math.floor(h/24)+"d ago"}
-function postSpriteOptions(selected=""){return FAMILIES.map(n=>`<option value="${esc(n)}" ${n===selected?"selected":""}>${esc(n)}</option>`).join("")}
+function initNew(){pageShell("New","LATEST","New sprites","The newest sprite families currently tracked by SpriteSwap.",'<div class="grid">'+spriteCards(NEW,"Base")+"</div>");bindSpriteActions();}
 function renderPostCard(x){
-  const get=Array.isArray(x.get)?x.get:[],give=Array.isArray(x.give)?x.give:[];
-  const chips=a=>a.slice(0,4).map(s=>`<div class="post-sprite"><span class="post-sprite-art">${image(s.name||s, s.tier||"Base")}</span><span><b>${esc(s.name||s)}</b><small>${esc(s.tier||"Base")}</small></span></div>`).join("");
-  return `<article class="trade-post" data-post-id="${esc(x.id)}">
-    <div class="post-user"><div class="avatar">${esc((x.trader||"S")[0].toUpperCase())}</div><div class="grow"><b>${esc(x.trader||"SpriteSwap Trader")}</b><div class="muted">${esc(x.rating||"New trader")} · ${esc(tradeTime(x.createdAt))}</div></div><span class="post-status">OPEN</span></div>
-    <div class="post-columns">
-      <div><div class="post-side-title get">YOU GET <span>${get.length}</span></div><div class="post-sprites">${chips(get)||'<div class="post-empty">Any sprite</div>}${get.length>4?`<div class="post-more">+${get.length-4} more</div>`:""}</div></div>
-      <div><div class="post-side-title give">YOU GIVE <span>${give.length}</span></div><div class="post-sprites">${chips(give)||'<div class="post-empty">Anything fair</div>}${give.length>4?`<div class="post-more">+${give.length-4} more</div>`:""}</div></div>
-    </div>
-    <div class="post-footer"><div><b>${esc(x.title||"Sprite trade")}</b><div class="muted">${esc(x.note||"Straight swap")}</div></div><button class="btn post-view" data-post-view="${esc(x.id)}">View trade</button></div>
-  </article>`
+  var get=x.get||[],give=x.give||[];
+  var chips=function(a){return a.map(function(s){return '<span class="trade-chip">'+esc(s.name||s)+' · '+esc(s.tier||"Base")+"</span>";}).join("");};
+  return '<article class="trade-post" data-post-view="'+esc(x.id)+'"><div class="trade-post-top"><div><span class="badge">OPEN</span><h3>'+esc(x.title||"Sprite trade")+'</h3><p class="muted">'+esc(x.trader||"SpriteSwap Trader")+' · '+tradeTime(x.createdAt)+'</p></div><button class="btn primary" data-post-view="'+esc(x.id)+'">View trade</button></div><div class="post-columns"><div><div class="post-side-title get">YOU GET</div><div>'+chips(get)+'</div></div><div><div class="post-side-title give">YOU GIVE</div><div>'+chips(give)+'</div></div></div><p class="muted">'+esc(x.note||"Open to fair offers.")+'</p></article>';
 }
-function openTradePostModal(post=null){
-  const x=post||{title:"",note:"",get:[],give:[]};
-  const modal=document.createElement("div");modal.className="modal-backdrop";
-  const row=(kind,label)=>`<div class="post-builder-side"><div class="section-head"><h3>${label}</h3><button class="mini-btn" type="button" data-add="${kind}">+ Add sprite</button></div><div class="builder-list" data-list="${kind}"></div></div>`;
-  modal.innerHTML=`<div class="modal trade-post-modal"><button class="modal-x">×</button><div class="kicker">TRADES / POST</div><h2>${post?"Trade post":"Post a new trade"}</h2><p class="muted">Choose what you want and what you can give. You can post without starting a chat.</p><label>Post title<input id="postTitle" class="input" maxlength="80" placeholder="Looking for new sprites…" value="${esc(x.title||"")}"></label><label>Note<textarea id="postNote" class="input" maxlength="240" placeholder="Optional details…">${esc(x.note||"")}</textarea></label><div class="post-builder">${row("get","You get")}${row("give","You give")}</div><div class="actions"><button class="btn primary" id="savePost">${post?"Save changes":"Publish trade"}</button><button class="btn" id="cancelPost">Cancel</button></div></div>`;
+function openTradePostModal(existing){
+  var modal=document.createElement("div");modal.className="modal-backdrop";
+  var p=existing||{};
+  var row=function(side){return '<div class="picker-row"><select class="select pick-name" data-side="'+side+'">'+postSpriteOptions()+'</select><select class="select pick-tier" data-side="'+side+'">'+TIERS.map(function(t){return "<option>"+esc(t)+"</option>";}).join("")+'</select><button class="mini-btn remove-pick" type="button">×</button></div>';};
+  modal.innerHTML='<div class="modal wide-modal"><button class="modal-x">×</button><div class="kicker">TRADE POST</div><h2>'+esc(p.title||"Create a trade")+'</h2><label>Title<input id="tradeTitle" class="input" value="'+esc(p.title||"")+'" placeholder="What are you looking for?"></label><label>Note<textarea id="tradeNote" class="input" rows="3" placeholder="Add a little context…">'+esc(p.note||"")+'</textarea></label><div class="post-builder"><section><div class="post-side-title get">YOU GET</div><div id="getPickers">'+(p.get||[]).map(function(){return row("get");}).join("")+'</div><button id="addGet" class="btn" type="button">+ Add sprite</button></section><section><div class="post-side-title give">YOU GIVE</div><div id="givePickers">'+(p.give||[]).map(function(){return row("give");}).join("")+'</div><button id="addGive" class="btn" type="button">+ Add sprite</button></section></div><div class="actions"><button id="saveTrade" class="btn primary">Post trade</button></div></div>';
   document.body.appendChild(modal);
-  const renderRows=(kind,items)=>{const box=modal.querySelector(`[data-list="${kind}"]`);box.innerHTML=items.map((s,i)=>`<div class="builder-row"><select class="select" data-field="${kind}" data-index="${i}">${postSpriteOptions(s.name)}</select><select class="select tier-select" data-tier="${kind}" data-index="${i}">${TIERS.map(t=>`<option ${t===(s.tier||"Base")?"selected":""}>${esc(t)}</option>`).join("")}</select><button class="mini-btn danger" type="button" data-remove="${kind}" data-index="${i}">×</button></div>`).join("")||'<div class="notice">No sprites added yet.</div>'};
-  const state={get:(x.get||[]).map(s=>typeof s==="string"?{name:s,tier:"Base"}:s),give:(x.give||[]).map(s=>typeof s==="string"?{name:s,tier:"Base"}:s)};
-  ["get","give"].forEach(k=>renderRows(k,state[k]));
-  modal.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{state[b.dataset.add].push({name:FAMILIES[0],tier:"Base"});renderRows(b.dataset.add,state[b.dataset.add])});
-  modal.onclick=e=>{if(e.target===modal)modal.remove();const rm=e.target.closest("[data-remove]");if(rm){state[rm.dataset.remove].splice(Number(rm.dataset.index),1);renderRows(rm.dataset.remove,state[rm.dataset.remove]);}};
-  modal.querySelector(".modal-x").onclick=()=>modal.remove();modal.querySelector("#cancelPost").onclick=()=>modal.remove();
-  modal.querySelector("#savePost").onclick=()=>{
-    const title=modal.querySelector("#postTitle").value.trim()||"Sprite trade";
-    const note=modal.querySelector("#postNote").value.trim()||"Straight swap";
-    if(!state.get.length&&!state.give.length){alert("Add at least one sprite to the trade.");return}
-    const id=post?.id||("post-"+Date.now()+"-"+Math.random().toString(36).slice(2,8));
-    const item={...(post||{}),id,title,note,get:state.get,give:state.give,trader:profileData().name||"SpriteSwap Trader",createdAt:post?.createdAt||Date.now(),rating:post?.rating||"New trader"};
-    const all=tradePosts();const idx=all.findIndex(p=>p.id===id);if(idx>=0)all[idx]=item;else all.unshift(item);saveTradePosts(all.slice(0,200));window.dispatchEvent(new Event("spriteswap-posts-changed"));modal.remove();if(typeof window.__renderTrades==="function")window.__renderTrades();
+  var add=function(id,side){document.getElementById(id).insertAdjacentHTML("beforeend",row(side));};
+  modal.querySelector("#addGet").onclick=function(){add("getPickers","get");};modal.querySelector("#addGive").onclick=function(){add("givePickers","give");};
+  modal.addEventListener("click",function(e){if(e.target.classList.contains("remove-pick"))e.target.parentElement.remove();});
+  modal.querySelector(".modal-x").onclick=function(){modal.remove();};
+  modal.querySelector("#saveTrade").onclick=function(){
+    var read=function(id){return Array.from(modal.querySelectorAll("#"+id+" .picker-row")).map(function(r){return {name:r.querySelector(".pick-name").value,tier:r.querySelector(".pick-tier").value};});};
+    var get=read("getPickers"),give=read("givePickers");
+    if(!get.length||!give.length){alert("Add at least one sprite on both sides.");return;}
+    var all=tradePosts(),name=String(profileData().name||"SpriteSwap Trader"),obj=Object.assign({},p);
+    obj.id=obj.id||("trade-"+Date.now()+"-"+Math.random().toString(36).slice(2,7));obj.title=document.getElementById("tradeTitle").value.trim()||"Sprite trade";obj.note=document.getElementById("tradeNote").value.trim();obj.get=get;obj.give=give;obj.trader=obj.trader||name;obj.createdAt=obj.createdAt||Date.now();obj.status="open";delete obj.acceptedBy;delete obj.acceptedAt;
+    var i=all.findIndex(function(x){return x.id===obj.id;});if(i<0)all.unshift(obj);else all[i]=obj;saveTradePosts(all);modal.remove();
   };
+}
+function openTradeDetails(post){
+  var modal=document.createElement("div");modal.className="modal-backdrop";
+  var cards=function(a){return a.map(function(s){return '<div class="detail-sprite">'+image(s.name,s.tier||"Base")+'<b>'+esc(s.name)+'</b><small>'+esc(s.tier||"Base")+"</small></div>";}).join("");};
+  var me=String(profileData().name||"SpriteSwap Trader"),accepted=post.status==="negotiating";
+  var action=accepted?'<button id="privateTrade" class="btn primary">Open private chat</button><button id="returnTrade" class="btn danger-btn">Return to board</button>':'<button id="acceptTrade" class="btn primary">Accept trade</button>';
+  modal.innerHTML='<div class="modal trade-detail-modal"><button class="modal-x">×</button><div class="kicker">TRADE DETAILS</div><h2>'+esc(post.title||"Sprite trade")+'</h2><p class="muted">Posted by '+esc(post.trader||"SpriteSwap Trader")+' · '+tradeTime(post.createdAt)+'</p><div class="trade-detail-grid"><section><div class="post-side-title get">YOU GET</div><div class="detail-sprites">'+cards(post.get||[])+'</div></section><section><div class="post-side-title give">YOU GIVE</div><div class="detail-sprites">'+cards(post.give||[])+'</div></section></div><p>'+esc(post.note||"Open to fair offers.")+'</p><div class="trade-detail-actions">'+action+'</div><div class="notice"><b>After acceptance:</b> the listing leaves the public board and a private trade chat opens. Returning the trade puts it back on the board.</div></div>';
+  document.body.appendChild(modal);
+  modal.querySelector(".modal-x").onclick=function(){modal.remove();};
+  var accept=modal.querySelector("#acceptTrade");
+  if(accept)accept.onclick=function(){var all=tradePosts(),x=all.find(function(a){return a.id===post.id;});if(!x)return;x.status="negotiating";x.acceptedBy=me;x.acceptedAt=Date.now();saveTradePosts(all);modal.remove();location.hash="trade-chat="+encodeURIComponent(x.id);};
+  var open=modal.querySelector("#privateTrade");if(open)open.onclick=function(){modal.remove();location.hash="trade-chat="+encodeURIComponent(post.id);};
+  var back=modal.querySelector("#returnTrade");if(back)back.onclick=function(){var all=tradePosts(),x=all.find(function(a){return a.id===post.id;});if(x){x.status="open";delete x.acceptedBy;delete x.acceptedAt;saveTradePosts(all);}modal.remove();};
 }
 function initTrades(){
-  let channel=null;
-  try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-posts"):null}catch(e){}
-  const render=()=>{
-    const q=(document.getElementById("postSearch")?.value||"").toLowerCase().trim();
-    const side=document.getElementById("postSide")?.value||"all",tier=document.getElementById("postTier")?.value||"all";
-    let posts=tradePosts();
-    posts=posts.filter(x=>{
-      const all=[...(x.get||[]),...(x.give||[])].map(s=>typeof s==="string"?s:s.name).join(" ").toLowerCase();
-      const trader=String(x.trader||"").toLowerCase();
-      const sideOk=side==="all"||((side==="get"?x.get:x.give)||[]).length>0;
-      const tierOk=tier==="all"||[...(x.get||[]),...(x.give||[])].some(s=>(typeof s==="string"?"Base":s.tier)===tier);
-      return (!q||all.includes(q)||trader.includes(q)||String(x.title||"").toLowerCase().includes(q))&&sideOk&&tierOk;
+  var render=function(){
+    var search=document.getElementById("postSearch"),sideEl=document.getElementById("postSide"),tierEl=document.getElementById("postTier");
+    var q=search?search.value.toLowerCase().trim():"",side=sideEl?sideEl.value:"all",tier=tierEl?tierEl.value:"all";
+    var posts=tradePosts().filter(function(x){return (x.status||"open")==="open";}).filter(function(x){
+      var all=[].concat(x.get||[],x.give||[]).map(function(s){return typeof s==="string"?s:s.name;}).join(" ").toLowerCase(),trader=String(x.trader||"").toLowerCase();
+      var sideList=side==="get"?x.get:side==="give"?x.give:[].concat(x.get||[],x.give||[]);
+      return (!q||all.includes(q)||trader.includes(q)||String(x.title||"").toLowerCase().includes(q))&&sideList.length>0&&(tier==="all"||[].concat(x.get||[],x.give||[]).some(function(s){return (s.tier||"Base")===tier;}));
     });
-    layout("Trades","Trades",`<main><section class="hero trades-hero"><div class="shell"><div class="kicker">TRADING BOARD</div><h1>Find your next<br><span style="color:var(--mint)">sprite swap.</span></h1><p>Every open trade post in one place. Browse the board, filter what you need, or make your own post without having to enter chat.</p><div class="actions"><button class="btn primary" id="newTradePost">+ Post a trade</button><a class="btn" href="chat.html">Open community chat</a></div></div></section><section class="section"><div class="shell"><div class="trade-board-head"><div><div class="kicker">OPEN POSTS</div><h2>All trade posts <span class="post-count">${posts.length}</span></h2><p class="muted">Newest posts first.</p></div></div><div class="post-filters"><input id="postSearch" class="input" value="${esc(q)}" placeholder="Search a trader or sprite…"><select id="postSide" class="select"><option value="all">All posts</option><option value="get">Posts looking for something</option><option value="give">Posts offering something</option></select><select id="postTier" class="select"><option value="all">Any variant</option>${TIERS.map(t=>`<option ${t===tier?"selected":""}>${esc(t)}</option>`).join("")}</select><button id="clearPostFilters" class="btn">Reset</button></div><div id="tradePostList" class="trade-post-list">${posts.map(renderPostCard).join("")||'<div class="notice empty-posts"><b>No trade posts match.</b><span>Try clearing the filters or be the first to post a trade.</span></div>'}</div></div></section></main>`);
-    window.__renderTrades=render;
-    document.getElementById("newTradePost").onclick=()=>openTradePostModal();
-    document.getElementById("postSearch").oninput=render;document.getElementById("postSide").onchange=render;document.getElementById("postTier").onchange=render;document.getElementById("clearPostFilters").onclick=()=>{document.getElementById("postSearch").value="";document.getElementById("postSide").value="all";document.getElementById("postTier").value="all";render()};
-    document.querySelectorAll("[data-post-view]").forEach(b=>b.onclick=()=>{const x=tradePosts().find(p=>p.id===b.dataset.postView);if(!x)return;openTradePostModal(x)});
+    layout("Trades","Trades",'<main><section class="hero trades-hero"><div class="shell"><div class="kicker">TRADING BOARD</div><h1>Find your next<br><span style="color:var(--mint)">sprite swap.</span></h1><p>Click any listing to inspect it. Accept a trade to move it into a private chat.</p><div class="actions"><button class="btn primary" id="newTradePost">+ Post a trade</button><a class="btn" href="chat.html">Community chat</a></div></div></section><section class="section"><div class="shell"><div class="post-filters"><input id="postSearch" class="input" value="'+esc(q)+'" placeholder="Search trades…"><select id="postSide" class="select"><option value="all">All posts</option><option value="get"'+(side==="get"?" selected":"")+'>Looking for something</option><option value="give"'+(side==="give"?" selected":"")+'>Offering something</option></select><select id="postTier" class="select"><option value="all">Any variant</option>'+TIERS.map(function(t){return '<option'+(tier===t?" selected":"")+'>'+esc(t)+"</option>";}).join("")+'</select><button id="clearPostFilters" class="btn">Reset</button></div><div id="tradePostList" class="trade-post-list">'+(posts.map(renderPostCard).join("")||'<div class="notice empty-posts"><b>No open trade posts.</b><span>Be the first to post one.</span></div>')+"</div></div></section></main>");
+    document.getElementById("newTradePost").onclick=function(){openTradePostModal();};
+    document.getElementById("postSearch").oninput=render;document.getElementById("postSide").onchange=render;document.getElementById("postTier").onchange=render;document.getElementById("clearPostFilters").onclick=function(){document.getElementById("postSearch").value="";document.getElementById("postSide").value="all";document.getElementById("postTier").value="all";render();};
+    document.querySelectorAll("[data-post-view]").forEach(function(b){b.onclick=function(e){e.stopPropagation();var x=tradePosts().find(function(p){return p.id===b.getAttribute("data-post-view");});if(x)openTradeDetails(x);};});
   };
-  if(channel)channel.onmessage=render;
-  window.addEventListener("storage",e=>{if(e.key==="spriteswap-trade-posts")render()});
-  window.addEventListener("spriteswap-posts-changed",render);
-  render();
+  window.addEventListener("storage",function(e){if(e.key==="spriteswap-trade-posts")render();});window.addEventListener("spriteswap-posts-changed",render);render();
 }
 function initChat(){
-  let channel=null;
-  try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-chat"):null}catch(e){}
-  const chatData=()=>{try{return JSON.parse(localStorage.getItem("spriteswap-community-chat")||"[]")}catch(e){return[]}};
-  const saveChat=a=>localStorage.setItem("spriteswap-community-chat",JSON.stringify(a));
-  const render=()=>{
-    const q=(document.getElementById("chatSearch")?.value||"").toLowerCase().trim();
-    const msgs=chatData().filter(m=>!q||String(m.text||"").toLowerCase().includes(q)||String(m.trader||"").toLowerCase().includes(q)).slice(-100);
-    layout("Chat","Chat",`<main><section class="hero"><div class="shell"><div class="kicker">COMMUNITY CHAT</div><h1>Talk about sprites.<br><span style="color:var(--mint)">No trade required.</span></h1><p>Chat about new drops, collections, questions, trades, or whatever is relevant to the SpriteSwap community.</p></div></section><section class="section"><div class="shell"><div class="chat-page"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Community</b><span class="online-dot">● OPEN</span></div><div class="chat-toolbar"><input id="chatSearch" class="input" value="${esc(q)}" placeholder="Search chat…"><button id="clearChat" class="btn">Clear my messages</button></div><div id="communityMessages" class="chat-messages chat-page-messages">${msgs.map(m=>`<div class="chat-msg"><div class="avatar">${esc((m.trader||"S")[0].toUpperCase())}</div><div class="chat-bubble"><div><b>${esc(m.trader||"SpriteSwap Trader")}</b><span class="muted"> · ${esc(tradeTime(m.createdAt))}</span></div><div>${esc(m.text)}</div></div></div>`).join("")||'<div class="notice">No messages yet. Start the conversation.</div>'}</div><div class="chat-compose"><input id="communityMessage" class="input" maxlength="300" placeholder="Say something…"><button id="sendCommunity" class="btn primary">Send</button></div></div><aside class="trade-side"><h3>Community chat</h3><p class="muted">This is a general chat. You do not need to make a trade or choose a sprite to talk here.</p><div class="notice">Be respectful and keep personal information out of public chat.</div><a class="btn" href="trades.html">Browse trade posts</a></aside></div></div></section></main>`);
-    document.getElementById("chatSearch").oninput=render;
-    document.getElementById("sendCommunity").onclick=send;
-    document.getElementById("communityMessage").onkeydown=e=>{if(e.key==="Enter")send()};
-    document.getElementById("clearChat").onclick=()=>{const me=profileData().name||"SpriteSwap Trader";saveChat(chatData().filter(m=>m.trader!==me));render()};
-    function send(){const input=document.getElementById("communityMessage"),text=input.value.trim();if(!text)return;if(moderationCheck(text)){const m=issueWarning("Potentially rule-breaking chat content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return}if(isBanned()){alert(botMessage());return}const a=chatData();a.push({trader:profileData().name||"SpriteSwap Trader",text,createdAt:Date.now()});saveChat(a.slice(-300));if(channel)try{channel.postMessage({type:"chat"})}catch(e){}render()}
-  };
-  if(channel)channel.onmessage=render;
-  window.addEventListener("storage",e=>{if(e.key==="spriteswap-community-chat")render()});
+  var key="spriteswap-community-chat",read=function(){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(e){return[];}},write=function(a){localStorage.setItem(key,JSON.stringify(a.slice(-200)));};
+  var render=function(){var msgs=read();layout("Chat","Chat",'<main><section class="section chat-page"><div class="shell"><div class="kicker">COMMUNITY CHAT</div><h1>Talk sprites.</h1><p class="muted">General chat for the community. Trade negotiations belong in private trade chat.</p><div class="chat-messages">'+(msgs.map(function(m){return '<div class="chat-msg"><div class="avatar">'+esc((m.name||"S")[0])+'</div><div class="chat-bubble"><b>'+esc(m.name)+'</b><div>'+esc(m.text)+'</div></div></div>';}).join("")||'<div class="notice">No messages yet.</div>')+'</div><div class="chat-compose"><input id="communityMessage" class="input" maxlength="500" placeholder="Say something…"><button id="sendCommunity" class="btn primary">Send</button></div></div></section></main>');var send=function(){var i=document.getElementById("communityMessage"),t=i.value.trim();if(!t)return;var a=read(),p=profileData();a.push({name:String(p.name||"SpriteSwap Trader"),text:t,createdAt:Date.now()});write(a);render();};document.getElementById("sendCommunity").onclick=send;document.getElementById("communityMessage").onkeydown=function(e){if(e.key==="Enter")send();};};
   render();
 }
-
-
-function initUpcoming(){
-  const items=[["Pacman","Tracked upcoming sprite","hot","Pacman","Base"],["Loot Master Crown","Variant watch","hot","Crown","Loot Hacker"],["Halloween Event","Season event sprite watch","hot","Spooky Dash","Base"],["Mystery Sprite","Details coming soon","hot","Vampire","Base"]];
-  layout("Upcoming","Upcoming",`<main><section class="hero"><div class="shell"><div class="kicker">NEXT UP</div><h1>Coming<br><span style="color:var(--mint)">soon.</span></h1><p>Sprites and variants being watched by SpriteSwap before they are added to the live index.</p></div></section><section class="section"><div class="shell"><div class="upcoming-grid">${items.map(([n,d,b,asset,tier])=>`<article class="card upcoming-card"><div class="upcoming-art">${image(asset,tier)}</div><div class="card-body"><span class="badge ${b}">UPCOMING</span><h3>${n}</h3><p>${d}</p></div></article>`).join("")}</div></div></section></main>`);
+function initPrivateTradeChat(){
+  var id=decodeURIComponent((location.hash||"").replace("#trade-chat=","")),post=tradePosts().find(function(x){return x.id===id;});
+  if(!post||post.status!=="negotiating"){location.hash="";initTrades();return;}
+  var key="spriteswap-private-chat-"+id,me=String(profileData().name||"SpriteSwap Trader"),read=function(){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(e){return[];}},write=function(a){localStorage.setItem(key,JSON.stringify(a.slice(-200)));};
+  var render=function(){var msgs=read();layout("Private Trade","Trades",'<main><section class="section"><div class="shell"><div class="kicker">PRIVATE TRADE</div><h1>'+esc(post.title||"Sprite trade")+'</h1><p class="muted">'+esc(post.trader)+" ↔ "+esc(post.acceptedBy||me)+'</p><div class="trade-private-summary"><div><b>You get</b><div>'+[].concat(post.get||[]).map(function(s){return '<span class="trade-chip">'+esc(s.name)+" · "+esc(s.tier||"Base")+"</span>";}).join("")+'</div></div><div><b>You give</b><div>'+[].concat(post.give||[]).map(function(s){return '<span class="trade-chip">'+esc(s.name)+" · "+esc(s.tier||"Base")+"</span>";}).join("")+'</div></div></div><div class="chat-messages trade-private-messages">'+(msgs.map(function(m){return '<div class="chat-msg"><div class="avatar">'+esc((m.name||"S")[0])+'</div><div class="chat-bubble"><b>'+esc(m.name)+'</b><div>'+esc(m.text)+'</div></div></div>';}).join("")||'<div class="notice">No private messages yet.</div>')+'</div><div class="chat-compose"><input id="privateInput" class="input" maxlength="500" placeholder="Talk about this trade…"><button id="privateSend" class="btn primary">Send</button></div><div class="actions"><a class="btn" href="trades.html">Back to board</a><button id="declinePrivate" class="btn danger-btn">Decline / return to board</button></div></div></section></main>');var send=function(){var i=document.getElementById("privateInput"),t=i.value.trim();if(!t)return;var a=read();a.push({name:me,text:t,createdAt:Date.now()});write(a);render();};document.getElementById("privateSend").onclick=send;document.getElementById("privateInput").onkeydown=function(e){if(e.key==="Enter")send();};document.getElementById("declinePrivate").onclick=function(){var all=tradePosts(),x=all.find(function(a){return a.id===id;});if(x){x.status="open";delete x.acceptedBy;delete x.acceptedAt;saveTradePosts(all);}location.href="trades.html";};};
+  render();
 }
-function profileData(){try{return JSON.parse(localStorage.getItem("spriteswap-profile")||"{}")}catch(e){return{}}}
-function saveProfile(p){localStorage.setItem("spriteswap-profile",JSON.stringify(p))}
-function initProfile(){
-  const p=profileData(),name=String(p.name||"SpriteSwap Trader"),bio=String(p.bio||"Sprite collector and trader."),avatar=String(p.avatar||"S"),w=savedList("spriteswap-wishlist").length,m=savedList("spriteswap-mastered").length;
-  layout("Profile","Profile",`<main><section class="hero"><div class="shell"><div class="kicker">ACCOUNT / PROFILE</div><div class="profile-hero"><div class="profile-avatar">${esc(avatar.slice(0,2).toUpperCase())}</div><div><h1>${esc(name)}</h1><p>${esc(bio)}</p></div></div></div></section><section class="section"><div class="shell"><div class="stats"><div class="stat"><b>${w}</b><span>Wishlist</span></div><div class="stat"><b>${m}</b><span>Mastered</span></div><div class="stat"><b>${m+w}</b><span>Tracked actions</span></div><div class="stat"><b>V1</b><span>Profile</span></div></div><div class="hero-card"><h2>Edit profile</h2><div class="tools"><input id="pName" class="input" value="${esc(name)}" placeholder="Display name"><input id="pAvatar" class="input" value="${esc(avatar)}" placeholder="Avatar initials"></div><textarea id="pBio" class="input" style="width:100%;min-height:110px" placeholder="Short bio">${esc(bio)}</textarea><div class="actions"><button id="saveProfile" class="btn primary">Save profile</button><a class="btn" href="wishlist.html">Open collection</a></div></div></div></section></main>`);
-  document.getElementById("saveProfile").onclick=()=>{saveProfile({name:document.getElementById("pName").value.trim()||"SpriteSwap Trader",avatar:document.getElementById("pAvatar").value.trim()||"S",bio:document.getElementById("pBio").value.trim()||"Sprite collector and trader."});initProfile()};
+function initWishlist(){
+  var wanted=savedList("spriteswap-wishlist"),mastered=savedList("spriteswap-mastered"),make=function(ids,label){return ids.map(function(id){var p=id.split("::");return '<article class="card sprite-card">'+image(p[0],p[1]||"Base")+'<div class="card-body"><span class="badge">'+label+'</span><h3>'+esc(p[0])+'</h3><p>'+esc(p[1]||"Base")+'</p><button class="mini-btn" data-remove="'+esc(id)+'">Remove</button></div></article>';}).join("");};
+  layout("Wishlist","Wishlist",'<main><section class="hero"><div class="shell"><div class="kicker">YOUR COLLECTION</div><h1>Wishlist & Mastered</h1><p>Keep the sprites you want and the ones you have finished.</p></div></section><section class="section"><div class="shell"><h2>Wishlist</h2><div class="grid">'+(make(wanted,"WISHLIST")||'<div class="notice">Your wishlist is empty.</div>')+'</div><h2 style="margin-top:42px">Mastered</h2><div class="grid">'+(make(mastered,"MASTERED")||'<div class="notice">No mastered sprites yet.</div>')+"</div></div></section></main>");
+  document.querySelectorAll("[data-remove]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-remove");["spriteswap-wishlist","spriteswap-mastered"].forEach(function(k){saveList(k,savedList(k).filter(function(x){return x!==id;}));});initWishlist();};});
 }
-function initLeaderboard(){
-  const m=savedList("spriteswap-mastered"),w=savedList("spriteswap-wishlist");
-  layout("Leaderboard","Leaderboard",`<main><section class="hero"><div class="shell"><div class="kicker">COMMUNITY</div><h1>Trader<br><span style="color:var(--mint)">leaderboard.</span></h1><p>Local collection activity shown for this browser. No fake global player rankings are presented as live data.</p></div></section><section class="section"><div class="shell"><div class="stats"><div class="stat"><b>${m.length}</b><span>Mastered by you</span></div><div class="stat"><b>${w.length}</b><span>Wanted by you</span></div><div class="stat"><b>${m+w.length}</b><span>Collection actions</span></div><div class="stat"><b>LOCAL</b><span>Activity scope</span></div></div><div class="list"><div class="row"><div class="rank">★</div><div class="avatar">S</div><div class="grow"><b>${esc(profileData().name||"SpriteSwap Trader")}</b><div class="muted">${m} mastered sprites · ${w} wishlist sprites</div></div><b>${m*100+w*25} XP</b></div><div class="notice">Live global leaderboards require a shared backend. This version keeps your local progress accurate instead of inventing online users.</div></div></div></section></main>`);
-}
-function initAccount(){const p=profileData();layout("Account","Profile",`<main><section class="hero"><div class="shell"><div class="kicker">ACCOUNT</div><h1>Your SpriteSwap<br><span style="color:var(--mint)">account.</span></h1><p>Your current V1 profile is stored locally in this browser.</p></div></section><section class="section"><div class="shell"><div class="hero-card"><h2>${esc(p.name||"SpriteSwap Trader")}</h2><p class="muted">No external sign-in is connected in this V1 build.</p><div class="actions"><a class="btn primary" href="profile.html">Edit profile</a><button id="resetLocal" class="btn">Reset local profile</button></div></div></div></section></main>`);document.getElementById("resetLocal").onclick=()=>{localStorage.removeItem("spriteswap-profile");initAccount()}}
-function initCommunity(){layout("Community","Community",`<main><section class="hero"><div class="shell"><div class="kicker">COMMUNITY HUB</div><h1>Trade. Chat.<br><span style="color:var(--mint)">Share sprites.</span></h1><p>Keep your SpriteSwap collection here, then jump into the community chat when you want to trade with others.</p><div class="actions"><a class="btn primary" href="https://discord.gg/kS5Xf35Vf" target="_blank" rel="noopener">Open Discord</a><a class="btn" href="trades.html">Browse trades</a></div></div></section><section class="section"><div class="shell"><div class="upcoming-strip"><div><b>Sprite Index</b><span>Browse tracked variants</span><a class="btn" href="index-page.html">Open</a></div><div><b>Your Collection</b><span>Wishlist + mastered</span><a class="btn" href="wishlist.html">Open</a></div><div><b>Report</b><span>Flag a site problem</span><a class="btn" href="report.html">Open</a></div></div></div></section></main>`)}
+function initUpcoming(){pageShell("Upcoming","UP NEXT","Upcoming sprites","Watch the sprites and variants SpriteSwap is tracking next.",'<div class="grid">'+[['Pacman',"New sprite watch"],["Crown","Loot Master Crown variant"],["Spooky Dash","Halloween event watch"],["Vampire","Upcoming family"]].map(function(x){return '<article class="card sprite-card">'+image(x[0],x[0]==="Crown"?"Loot Hacker":"Base")+'<div class="card-body"><span class="badge new">UPCOMING</span><h3>'+esc(x[0])+'</h3><p>'+esc(x[1])+'</p></div></article>';}).join("")+"</div>");}
+function initLeaderboard(){var mastered=savedList("spriteswap-mastered"),total=Math.max(1,TIERS.reduce(function(s,t){return s+FAMILIES.filter(function(n){return isTracked(n,t);}).length;},0));pageShell("Leaderboard","COMMUNITY","Leaderboard","Local collection progress and community placeholders.",'<div class="list"><div class="row"><div class="rank">1</div><div class="grow"><b>'+esc(profileData().name||"SpriteSwap Trader")+'</b><div class="muted">Your collection</div></div><strong>'+Math.round(mastered.length/total*100)+'%</strong></div><div class="row"><div class="rank">—</div><div class="grow"><b>Community rankings</b><div class="muted">Connect the backend later for live cross-device rankings.</div></div></div></div>');}
+function initProfile(){var p=profileData(),name=String(p.name||"SpriteSwap Trader"),bio=String(p.bio||"Sprite collector and trader."),avatar=String(p.avatar||"S");layout("Profile","Profile",'<main><section class="hero"><div class="shell"><div class="profile-hero"><div class="profile-avatar">'+esc(avatar.slice(0,1))+'</div><div><div class="kicker">PROFILE</div><h1>'+esc(name)+'</h1><p>'+esc(bio)+'</p></div></div></div></section><section class="section"><div class="shell"><div class="stats"><div class="stat"><b>'+savedList("spriteswap-wishlist").length+'</b><span>Wishlist</span></div><div class="stat"><b>'+savedList("spriteswap-mastered").length+'</b><span>Mastered</span></div><div class="stat"><b>'+tradePosts().filter(function(x){return x.trader===name;}).length+'</b><span>Trade posts</span></div></div><div class="actions"><a class="btn primary" href="account.html">Edit profile</a><a class="btn" href="trades.html">View trades</a></div></div></section></main>');}
+function initAccount(){var p=profileData();layout("Account","Profile",'<main><section class="section"><div class="shell"><div class="hero-card"><div class="kicker">ACCOUNT</div><h1>Your SpriteSwap identity</h1><label>Username<input id="accountName" class="input" value="'+esc(p.name||"SpriteSwap Trader")+'"></label><label>Bio<textarea id="accountBio" class="input" rows="3">'+esc(p.bio||"Sprite collector and trader.")+'</textarea></label><label>Avatar letter<input id="accountAvatar" maxlength="1" class="input" value="'+esc(p.avatar||"S")+'"></label><div class="actions"><button id="saveAccount" class="btn primary">Save profile</button></div></div></div></section></main>');document.getElementById("saveAccount").onclick=function(){localStorage.setItem("spriteswap-profile",JSON.stringify({name:document.getElementById("accountName").value.trim()||"SpriteSwap Trader",bio:document.getElementById("accountBio").value.trim(),avatar:document.getElementById("accountAvatar").value.trim().slice(0,1)||"S"}));location.href="profile.html";};}
 function initSettings(){
-  const themes={
-    mint:["#07110f","#10231e","#62f5bf","#c7ff55"],
-    blue:["#07101b","#10213a","#5bbcff","#78f0ff"],
-    purple:["#10091a","#231535","#c68cff","#f2a8ff"],
-    orange:["#170d07","#2b1b10","#ffb35c","#ffd166"]
-  };
-  const current=localStorage.getItem("spriteswap-theme")||"mint";
-  const reduced=localStorage.getItem("spriteswap-reduced-motion")==="1";
-  const compact=localStorage.getItem("spriteswap-compact")==="1";
-  layout("Settings","Settings",`<main><section class="hero"><div class="shell"><div class="kicker">SETTINGS</div><h1>Make SpriteSwap<br><span style="color:var(--mint)">yours.</span></h1><p>One place for appearance, chat, profile and safety preferences.</p></div></section><section class="section"><div class="shell"><div class="settings-grid">
-    <div class="hero-card"><h2>🎨 Site color</h2><p class="muted">Pick the accent used across SpriteSwap.</p><div class="theme-options">${Object.keys(themes).map(k=>`<button class="theme-choice ${k===current?"selected":""}" data-theme="${k}"><i style="background:${themes[k][2]}"></i>${k[0].toUpperCase()+k.slice(1)}</button>`).join("")}</div><label class="setting-row"><span><b>Custom accent</b><small>Choose any accent color.</small></span><input id="customAccent" type="color" value="${localStorage.getItem("spriteswap-custom-accent")||themes[current][2]}"></label></div>
-    <div class="hero-card"><h2>💬 Trading chat</h2><p class="muted">Discord-style trading room with search, offers, safety checks and instant updates between open SpriteSwap tabs.</p><div class="actions"><a class="btn primary" href="chat.html">Open community chat</a><a class="btn" href="report.html">Safety & reports</a></div><div class="notice">Global chat connects automatically when the Firebase configuration is installed. Otherwise SpriteSwap stays in local mode.</div></div>
-    <div class="hero-card"><h2>✨ Experience</h2><label class="setting-row"><span><b>Reduce motion</b><small>Turn off most animated effects.</small></span><input id="reduceMotion" type="checkbox" ${reduced?"checked":""}></label><label class="setting-row"><span><b>Compact cards</b><small>Use tighter spacing for sprite browsing.</small></span><input id="compactMode" type="checkbox" ${compact?"checked":""}></label></div>
-    <div class="hero-card"><h2>👤 Account</h2><p class="muted">Manage your local profile, moderation status and community tools.</p><div class="actions"><a class="btn" href="profile.html">Profile</a><a class="btn" href="account.html">Account</a><a class="btn" href="community.html">Community</a></div></div>
-    <div class="hero-card"><h2>🧹 Data</h2><p class="muted">Preferences are stored in this browser.</p><button id="resetSettings" class="btn">Reset site settings</button></div>
-  </div></div></section></main>`);
-  const apply=k=>{
-    const t=themes[k]||themes.mint;
-    document.documentElement.style.setProperty("--bg",t[0]);document.documentElement.style.setProperty("--bg2",t[0]);document.documentElement.style.setProperty("--panel",t[1]);document.documentElement.style.setProperty("--mint",t[2]);document.documentElement.style.setProperty("--lime",t[3]);localStorage.setItem("spriteswap-theme",k);
-  };
+  var themes={mint:["#07110f","#10231e","#62f5bf","#c7ff55"],blue:["#07101b","#10213a","#5bbcff","#78f0ff"],purple:["#10091a","#231535","#c68cff","#f2a8ff"],orange:["#170d07","#2b1b10","#ffb35c","#ffd166"]};
+  var current=localStorage.getItem("spriteswap-theme")||"mint",reduced=localStorage.getItem("spriteswap-reduced-motion")==="1",compact=localStorage.getItem("spriteswap-compact")==="1";
+  layout("Settings","Settings",'<main><section class="hero"><div class="shell"><div class="kicker">SETTINGS</div><h1>Clean controls.<br><span style="color:var(--mint)">Nothing extra.</span></h1><p>Appearance, browsing, profile and safety settings in one place.</p></div></section><section class="section"><div class="shell"><div class="settings-grid"><div class="hero-card"><h2>Appearance</h2><p class="muted">Choose the accent used around SpriteSwap.</p><div class="theme-options">'+Object.keys(themes).map(function(k){return '<button class="theme-choice '+(k===current?"selected":"")+'" data-theme="'+k+'"><i style="background:'+themes[k][2]+'"></i>'+k[0].toUpperCase()+k.slice(1)+"</button>";}).join("")+'</div><label class="setting-row"><span><b>Custom accent</b><small>Pick your own accent.</small></span><input id="customAccent" type="color" value="'+esc(localStorage.getItem("spriteswap-custom-accent")||themes[current][2])+'"></label></div><div class="hero-card"><h2>Browsing</h2><label class="setting-row"><span><b>Reduce motion</b><small>Use fewer animated effects.</small></span><input id="reduceMotion" type="checkbox" '+(reduced?"checked":"")+'></label><label class="setting-row"><span><b>Compact cards</b><small>Tighter sprite browsing.</small></span><input id="compactMode" type="checkbox" '+(compact?"checked":"")+'></label></div><div class="hero-card"><h2>Community</h2><p class="muted">Use the public chat for general conversation. Trade negotiations happen in private trade chats.</p><div class="actions"><a class="btn primary" href="chat.html">Community chat</a><a class="btn" href="report.html">Reports</a></div></div><div class="hero-card"><h2>Profile</h2><p class="muted">Manage your public SpriteSwap profile.</p><div class="actions"><a class="btn" href="profile.html">Profile</a><a class="btn" href="account.html">Account</a></div></div><div class="hero-card"><h2>Data</h2><p class="muted">Preferences stay in this browser.</p><button id="resetSettings" class="btn">Reset site settings</button></div></div></div></section></main>');
+  var apply=function(k){var t=themes[k]||themes.mint;document.documentElement.style.setProperty("--bg",t[0]);document.documentElement.style.setProperty("--bg2",t[0]);document.documentElement.style.setProperty("--panel",t[1]);document.documentElement.style.setProperty("--mint",t[2]);document.documentElement.style.setProperty("--lime",t[3]);localStorage.setItem("spriteswap-theme",k);document.querySelectorAll("[data-theme]").forEach(function(b){b.classList.toggle("selected",b.getAttribute("data-theme")===k);});};
   apply(current);
-  const custom=localStorage.getItem("spriteswap-custom-accent");
-  if(custom){document.documentElement.style.setProperty("--mint",custom);document.documentElement.style.setProperty("--aqua",custom)}
-  document.querySelectorAll("[data-theme]").forEach(b=>b.onclick=()=>{localStorage.removeItem("spriteswap-custom-accent");apply(b.dataset.theme);initSettings()});
-  document.getElementById("customAccent").oninput=e=>{localStorage.setItem("spriteswap-custom-accent",e.target.value);document.documentElement.style.setProperty("--mint",e.target.value);document.documentElement.style.setProperty("--aqua",e.target.value)};
-  document.getElementById("reduceMotion").onchange=e=>{localStorage.setItem("spriteswap-reduced-motion",e.target.checked?"1":"0");document.documentElement.classList.toggle("reduce-motion",e.target.checked)};
-  document.getElementById("compactMode").onchange=e=>{localStorage.setItem("spriteswap-compact",e.target.checked?"1":"0");document.documentElement.classList.toggle("compact-mode",e.target.checked)};
-  document.getElementById("resetSettings").onclick=()=>{localStorage.removeItem("spriteswap-theme");localStorage.removeItem("spriteswap-custom-accent");localStorage.removeItem("spriteswap-reduced-motion");localStorage.removeItem("spriteswap-compact");initSettings()};
+  document.querySelectorAll("[data-theme]").forEach(function(b){b.onclick=function(){apply(b.getAttribute("data-theme"));};});
+  document.getElementById("customAccent").oninput=function(){localStorage.setItem("spriteswap-custom-accent",this.value);document.documentElement.style.setProperty("--mint",this.value);document.documentElement.style.setProperty("--aqua",this.value);};
+  document.getElementById("reduceMotion").onchange=function(){localStorage.setItem("spriteswap-reduced-motion",this.checked?"1":"0");document.documentElement.classList.toggle("reduce-motion",this.checked);};
+  document.getElementById("compactMode").onchange=function(){localStorage.setItem("spriteswap-compact",this.checked?"1":"0");document.documentElement.classList.toggle("compact-mode",this.checked);};
+  document.getElementById("resetSettings").onclick=function(){["spriteswap-theme","spriteswap-custom-accent","spriteswap-reduced-motion","spriteswap-compact"].forEach(function(k){localStorage.removeItem(k);});location.reload();};
 }
-function initSimple(){const p=location.pathname.split("/").pop()||"index.html";if(p==="index.html")return initHome();if(p==="index-page.html")return initIndex();if(p==="trades.html")return initTrades();if(p==="chat.html")return initChat();if(p==="settings.html")return initSettings();if(p==="new.html")return pageShell("New","LATEST","New this week","The newest Season 4 sprite families currently tracked by SpriteSwap.",`<div class="grid">${spriteCards(NEW)}</div>`);if(p==="upcoming.html")return initUpcoming();if(p==="leaderboard.html")return initLeaderboard();if(p==="wishlist.html")return initWishlist();
-if(p==="profile.html")return initProfile();if(p==="account.html")return initAccount();if(p==="report.html")return pageShell("Report","SAFETY","Report a problem","Tell the SpriteSwap team about a listing, profile or site issue.",`<div class="hero-card"><label>What happened?</label><textarea class="input" style="width:100%;min-height:140px;margin-top:10px" placeholder="Describe the issue…"></textarea><div class="actions"><button class="btn primary" onclick="alert('Thanks — your report form is ready to connect to the backend.')">Submit report</button></div></div>`);if(p==="rules.html")return pageShell("Rules","COMMUNITY","Community rules","Keep SpriteSwap friendly and useful for everyone.",`<div class="list">${["Be respectful.","No scams or fake trades.","Do not spam listings.","Use the report page for problems.","Have fun trading sprites."].map((x,i)=>`<div class="row"><div class="rank">${i+1}</div><div>${x}</div></div>`).join("")}</div>`);if(p==="community.html")return initCommunity();return initIndex()}
+function initCommunity(){pageShell("Community","COMMUNITY","Community","Useful links and safety tools for SpriteSwap.",'<div class="grid"><div class="hero-card"><h2>Community chat</h2><p>Talk about sprites and trades.</p><a class="btn primary" href="chat.html">Open chat</a></div><div class="hero-card"><h2>Rules</h2><p>Keep trades honest and conversations respectful.</p><a class="btn" href="rules.html">Read rules</a></div><div class="hero-card"><h2>Report</h2><p>Report a listing or site problem.</p><a class="btn" href="report.html">Report a problem</a></div></div>');}
+function initSimple(){
+  var p=location.pathname.split("/").pop()||"index.html";
+  if(p==="index.html")return initHome();
+  if(p==="index-page.html")return initIndex();
+  if(p==="new.html")return initNew();
+  if(p==="trades.html"){if((location.hash||"").indexOf("#trade-chat=")===0)return initPrivateTradeChat();return initTrades();}
+  if(p==="chat.html")return initChat();
+  if(p==="settings.html")return initSettings();
+  if(p==="upcoming.html")return initUpcoming();
+  if(p==="leaderboard.html")return initLeaderboard();
+  if(p==="wishlist.html")return initWishlist();
+  if(p==="profile.html")return initProfile();
+  if(p==="account.html")return initAccount();
+  if(p==="community.html")return initCommunity();
+  if(p==="report.html")return pageShell("Report","SAFETY","Report a problem","Use this page to flag a listing or site issue.",'<div class="hero-card"><textarea id="reportText" class="input" rows="7" placeholder="Describe the problem…"></textarea><div class="actions"><button class="btn primary" onclick="alert(\'Thanks — your report was recorded locally for this demo.\')">Submit report</button></div></div>');
+  if(p==="rules.html")return pageShell("Rules","COMMUNITY","Community rules","Keep SpriteSwap friendly and useful.",'<div class="list"><div class="row"><div class="rank">1</div><div>Be respectful.</div></div><div class="row"><div class="rank">2</div><div>No fake trades or scams.</div></div><div class="row"><div class="rank">3</div><div>Do not spam listings.</div></div><div class="row"><div class="rank">4</div><div>Use reports for problems.</div></div></div>');
+  return initHome();
+}
+function applyStoredSettings(){
+  var themes={mint:["#07110f","#10231e","#62f5bf","#c7ff55"],blue:["#07101b","#10213a","#5bbcff","#78f0ff"],purple:["#10091a","#231535","#c68cff","#f2a8ff"],orange:["#170d07","#2b1b10","#ffb35c","#ffd166"]};
+  var k=localStorage.getItem("spriteswap-theme")||"mint",t=themes[k]||themes.mint,custom=localStorage.getItem("spriteswap-custom-accent");
+  document.documentElement.style.setProperty("--bg",t[0]);document.documentElement.style.setProperty("--bg2",t[0]);document.documentElement.style.setProperty("--panel",t[1]);document.documentElement.style.setProperty("--mint",custom||t[2]);document.documentElement.style.setProperty("--lime",t[3]);document.documentElement.style.setProperty("--aqua",custom||t[2]);
+  document.documentElement.classList.toggle("reduce-motion",localStorage.getItem("spriteswap-reduced-motion")==="1");document.documentElement.classList.toggle("compact-mode",localStorage.getItem("spriteswap-compact")==="1");
+}
 function safeStart(){
-  try{ initSimple(); }
+  try{applyStoredSettings();initSimple();}
   catch(err){
     console.error("SpriteSwap startup error:",err);
-    const app=document.getElementById("app");
-    if(app) app.innerHTML=`<main class="section"><div class="shell"><div class="hero-card"><div class="kicker">SPRITESWAP</div><h1>SpriteSwap is loading…</h1><p class="muted">The page hit a startup error. Refresh to try again.</p><button class="btn primary" onclick="location.reload()">Reload SpriteSwap</button></div></div></main>`;
+    var app=document.getElementById("app");
+    if(app)app.innerHTML='<main class="section"><div class="shell"><div class="hero-card"><div class="kicker">SPRITESWAP</div><h1>SpriteSwap hit a startup error.</h1><p class="muted">The old loading screen has been removed. This message shows the actual error instead of leaving the site stuck.</p><pre style="white-space:pre-wrap;overflow:auto;padding:12px;border-radius:10px;background:rgba(0,0,0,.25)">'+esc(err&&err.stack||err&&err.message||err)+'</pre><div class="actions"><button class="btn primary" onclick="location.reload()">Try again</button><a class="btn" href="index-page.html">Open sprites</a></div></div></div></main>';
   }
 }
 document.addEventListener("DOMContentLoaded",safeStart);
-function initModerationPanel(){
-  const m=moderationData();
-  return `<div class="moderation-panel"><div><b>SpriteSwap Safety Bot</b><span class="muted">Local moderation preview · ${moderationStatus()}</span></div><div class="muted">Reports are reviewed locally in this demo. Three confirmed warnings trigger a 24-hour restriction; repeated violations can trigger a lifetime restriction.</div></div>`;
-}
-;
