@@ -107,6 +107,7 @@ function initTrades(){
   if(hasConfig){
     try{
       if(!firebase.apps.length)firebase.initializeApp(config);
+      if(firebase.auth && !firebase.auth().currentUser){ firebase.auth().signInAnonymously().catch(()=>{}); }
       cloudDb=firebase.database();cloudRef=cloudDb.ref("spriteswap/trading/messages");cloudPresence=cloudDb.ref("spriteswap/trading/presence/"+clientId);cloudReady=true;
       cloudPresence.set({name:profileData().name||"Trader",at:firebase.database.ServerValue.TIMESTAMP});
       cloudPresence.onDisconnect().remove();
