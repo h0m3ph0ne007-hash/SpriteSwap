@@ -1,3 +1,13 @@
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function isTracked(name,tier="Base"){return FAMILIES.includes(name)&&TIERS.includes(tier)}
+function moderationStatus(){const m=moderationData();if(m.lifetime)return "Lifetime restriction";if(m.bannedUntil>Date.now())return "24-hour restriction";return (m.warnings||0)+"/3 warnings"}
+function layout(title,active,content){
+  const nav=[["Home","index.html"],["Sprites","index-page.html"],["New","new.html"],["Trades","trades.html"],["Upcoming","upcoming.html"],["Wishlist","wishlist.html"],["Community","community.html"],["Leaderboard","leaderboard.html"],["Profile","profile.html"],["Settings","settings.html"]];
+  document.title=title+" · SpriteSwap";
+  const app=document.getElementById("app");
+  if(!app) throw new Error("SpriteSwap app root is missing");
+  app.innerHTML=`<header class="topbar"><div class="shell"><a class="brand" href="index.html"><span class="mark">S</span><span>SpriteSwap</span></a><nav class="nav">${nav.map(([n,h])=>`<a class="${n===active?"active":""}" href="${h}">${n}</a>`).join("")}</nav><a class="btn nav-cta" href="trades.html">Trade</a></div></header>${content}<footer class="footer"><div class="shell"><b>SpriteSwap</b><span>Community sprite trading hub</span></div></footer>`;
+}
 const FAMILIES=["Jonesy","Adventure","Bush","Sonic","Tails","Shadow","8-Bit","Jackrabbit","Crown","Killswitch","Klombo","Mega Man","Overshield","X-Ray","Onigiri","Storm Scout","Blinky","Birthday","Crash Bandicoot","Pond","Morgana","Spooky Dash","Vampire","The Deer","Dumpster Dive"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
 const assetSlug=s=>String(s).replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
 const imageCandidates=(name,tier="Base")=>{
