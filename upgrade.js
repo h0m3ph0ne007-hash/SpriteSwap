@@ -25,6 +25,19 @@ window.openTradePostModal=function(existing){
   var i=a.findIndex(function(x){return x.id===o.id});if(i<0)a.unshift(o);else a[i]=o;savePosts(a);modal.remove();
  };
 };
+function openTradeDetails(x){
+ var modal=document.createElement("div");modal.className="modal-backdrop";
+ var canAccept=(x.status||"open")==="open"&&String(x.trader||"")!==me()&&!sameSide(x);
+ modal.innerHTML='<div class="modal wide-modal"><button class="modal-x">×</button><div class="kicker">TRADE DETAILS</div><h2>'+esc(x.title||"Sprite trade")+'</h2><p class="muted">'+esc(x.trader||"Trader")+' · expires in '+left(x.expiresAt)+'</p><div class="post-builder"><section><div class="post-side-title get">YOU GET</div>'+[].concat(x.get||[]).map(function(s){s=norm(s);return '<span class="trade-chip">'+esc(s.name)+' · '+esc(s.tier)+' · L'+s.level+'</span>';}).join('')+'</section><section><div class="post-side-title give">YOU GIVE</div>'+[].concat(x.give||[]).map(function(s){s=norm(s);return '<span class="trade-chip">'+esc(s.name)+' · '+esc(s.tier)+' · L'+s.level+'</span>';}).join('')+'</section></div><p class="muted">'+esc(x.note||"Open to fair offers.")+'</p><div class="actions">'+(canAccept?'<button id="acceptTrade" class="btn primary">Accept trade</button>':'<span class="badge">'+esc(x.status||"OPEN")+'</span>')+'<button id="closeTradeModal" class="btn">Close</button></div></div>';
+ document.body.appendChild(modal);
+ modal.querySelector(".modal-x").onclick=function(){modal.remove();};
+ modal.querySelector("#closeTradeModal").onclick=function(){modal.remove();};
+ if(canAccept)modal.querySelector("#acceptTrade").onclick=function(){
+   var all=posts(),p=all.find(function(z){return z.id===x.id});if(!p)return;
+   p.status="negotiating";p.acceptedBy=me();p.acceptedAt=Date.now();savePosts(all);modal.remove();
+   location.href="trades.html#trade-chat="+encodeURIComponent(p.id);
+ };
+}
 window.initTrades=function(){
  function render(){
   var q=(document.getElementById('postSearch').value||'').toLowerCase().trim(),side=document.getElementById('postSide').value,tier=document.getElementById('postTier').value,level=document.getElementById('postLevel').value,smartOnly=document.getElementById('smartMatch').checked,sort=document.getElementById('postSort').value;
@@ -58,5 +71,5 @@ window.initProfile=function(){
  var user=me(),done=cleanup().filter(function(x){return x.status==='completed'&&(x.trader===user||x.acceptedBy===user)}),rr=reviewData(),incoming=rr.filter(function(r){return r.to===user}),avg=incoming.length?(incoming.reduce(function(s,r){return s+Number(r.rating||0)},0)/incoming.length).toFixed(1):'—';
  layout('Profile','Profile','<main><section class="hero"><div class="shell"><div class="kicker">PROFILE</div><h1>'+esc(user)+'</h1><p>Collection, trading history and trader reputation.</p></div></section><section class="section"><div class="shell"><div class="stats"><div class="stat"><b>'+savedList('spriteswap-have').length+'</b><span>Have</span></div><div class="stat"><b>'+savedList('spriteswap-need').length+'</b><span>Need</span></div><div class="stat"><b>'+savedList('spriteswap-mastered').length+'</b><span>Mastered</span></div><div class="stat"><b>'+done.length+'</b><span>Completed trades</span></div><div class="stat"><b>'+avg+'</b><span>Trader rating</span></div></div><div class="hero-card"><h2>Trader reviews</h2>'+(incoming.map(function(r){return '<div class="row"><div class="grow"><b>'+esc(r.from)+'</b><div class="muted">Completed trade</div></div><strong>'+esc(r.rating)+'/5</strong></div>'}).join('')||'<div class="notice">No reviews yet.</div>')+'</div><div class="hero-card"><h2>Trade history</h2>'+(done.map(function(x){return '<div class="row"><div class="grow"><b>'+esc(x.title||'Sprite trade')+'</b><div class="muted">'+esc(x.trader)+' ↔ '+esc(x.acceptedBy||'Trader')+'</div></div><span class="badge">COMPLETED</span></div>'}).join('')||'<div class="notice">No completed trades yet.</div>')+'</div></div></section></main>');
 };
-var oldSimple=window.initSimple;window.initSimple=function(){var p=location.pathname.split('/').pop()||'index.html';if(p==='profile.html')return initProfile();if(p==='new-this-week.html'){var released=NEW.filter(function(n){return spriteSeason(n)===CURRENT_SEASON});pageShell('New This Week','LATEST','New This Week','Released sprites live here; Upcoming is for unreleased watches.','<div class="grid">'+spriteCards(released,'Base')+'</div>');bindSpriteActions();return}oldSimple()};
+var oldSimple=window.initSimple;window.initSimple=function(){var p=location.pathname.split('/').pop()||'index.html';if((location.hash||"").indexOf("#trade-chat=")===0)return initPrivateTradeChat();if(p==='profile.html')return initProfile();if(p==='new-this-week.html'){var released=NEW.filter(function(n){return spriteSeason(n)===CURRENT_SEASON});pageShell('New This Week','LATEST','New This Week','Released sprites live here; Upcoming is for unreleased watches.','<div class="grid">'+spriteCards(released,'Base')+'</div>');bindSpriteActions();return}oldSimple()};
 })();
