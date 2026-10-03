@@ -1,17 +1,26 @@
-const FAMILIES=["Jonesy","Adventure","Bush","Sonic","Tails","Shadow","8-Bit","Jackrabbit","Crown","Killswitch","Klombo","Mega Man","Overshield","X-Ray","Onigiri","Storm Scout","Blinky","Birthday","Crash Bandicoot","Pond","Morgana","Spooky Dash","Vampire","The Deer","Dumpster Dive"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat"]}[t]||[""]);
-const imageCandidates=(name,tier="Base")=>{const s=slug(name);return tierSlugs(tier).map(v=>`https://api.spritetrading.com/sprites/${v?`${s}-${v}`:s}.webp?w=640`)};
-const spriteUrl=(name,tier="Base")=>imageCandidates(name,tier)[0];const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));function nav(active){const links=[["index.html","Home"],["index-page.html","Sprites"],["trades.html","Trades"],["new.html","New"],["upcoming.html","Upcoming"],["leaderboard.html","Leaderboard"],["wishlist.html","Wishlist"],["profile.html","Profile"],["report.html","Report"],["rules.html","Rules"],["community.html","Community"]];return `<header class="topbar"><div class="shell"><a class="brand" href="index-page.html"><span class="mark">S</span><span class="wordmark">SPRITE<span>SWAP</span></span></a><nav class="nav">${links.map(([href,label])=>`<a class="${active===label?"active":""}" href="${href}">${label}</a>`).join("")}</nav><div class="header-actions"><a class="iconbtn" href="account.html" title="Account">◎</a></div></div></header>`}function footer(){return `<footer><div class="shell footer-flex"><span>SpriteSwap · a community sprite trading hub</span><span>Fresh V1 rebuild · quests excluded</span></div></footer>`}function layout(title,active,body){document.title=`${title} · SpriteSwap`;document.getElementById("app").innerHTML=nav(active)+body+footer()}function image(name,tier="Base"){
+const FAMILIES=["Jonesy","Adventure","Bush","Sonic","Tails","Shadow","8-Bit","Jackrabbit","Crown","Killswitch","Klombo","Mega Man","Overshield","X-Ray","Onigiri","Storm Scout","Blinky","Birthday","Crash Bandicoot","Pond","Morgana","Spooky Dash","Vampire","The Deer","Dumpster Dive"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
+const imageCandidates=(name,tier="Base")=>{
+  const s=slug(name), display=(tier==="Base"?name:`${tier} ${name}`);
+  const enc=encodeURIComponent(display);
+  const slugs=tierSlugs(tier);
+  return [
+    ...slugs.map(v=>`https://api.spritetrading.com/sprites/${v?`${s}-${v}`:s}.webp?w=640`),
+    `https://api.spritetrading.com/sprites/${s}.webp?w=640`,
+    `https://fortnite.gg/img/sprites/${enc}.png`
+  ];
+};
+const image=(name,tier="Base",cls="")=>{
   const candidates=imageCandidates(name,tier);
-  return `<img loading="lazy" decoding="async" src="${candidates[0]}" data-fallbacks="${esc(JSON.stringify(candidates.slice(1)))}" alt="${esc(name)} ${esc(tier)} icon" onerror="swapImage(this)">`;
-}
+  const first=candidates[0]||"";
+  return `<div class="art dynamic-art ${cls}" data-fallbacks='${esc(JSON.stringify(candidates))}'><img src="${first}" alt="${esc(name)} ${esc(tier)}" loading="lazy" onerror="swapImage(this)" onload="this.classList.add('loaded')"><div class="art-label">${esc(name)}</div></div>`;
+};
 function swapImage(img){
-  let list=[];
-  try{list=JSON.parse(img.dataset.fallbacks||"[]")}catch(e){}
-  if(list.length){img.src=list.shift();img.dataset.fallbacks=JSON.stringify(list);return}
-  img.closest(".art")?.classList.add("missing");
-  img.remove();
+  try{
+    const box=img.closest("[data-fallbacks]"), list=JSON.parse(box?.dataset.fallbacks||"[]"), i=Number(img.dataset.fallbackIndex||0)+1;
+    if(i<list.length){img.dataset.fallbackIndex=i;img.src=list[i];return}
+    img.style.display="none"; box?.classList.add("missing-art");
+  }catch(e){img.style.display="none"}
 }
-function isTracked(n,t){return !(n==="Mega Man"&&t!=="Base")}
 function savedList(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
 function toggleSaved(key,id){const a=savedList(key),i=a.indexOf(id);i>=0?a.splice(i,1):a.push(id);localStorage.setItem(key,JSON.stringify(a));return i<0}
 function spriteCards(list=FAMILIES,tier="Base"){
@@ -96,4 +105,8 @@ function initAccount(){const p=profileData();layout("Account","Profile",`<main><
 function initCommunity(){layout("Community","Community",`<main><section class="hero"><div class="shell"><div class="kicker">COMMUNITY HUB</div><h1>Trade. Chat.<br><span style="color:var(--mint)">Share sprites.</span></h1><p>Keep your SpriteSwap collection here, then jump into the community chat when you want to trade with others.</p><div class="actions"><a class="btn primary" href="https://discord.gg/kS5Xf35Vf" target="_blank" rel="noopener">Open Discord</a><a class="btn" href="trades.html">Browse trades</a></div></div></section><section class="section"><div class="shell"><div class="upcoming-strip"><div><b>Sprite Index</b><span>Browse tracked variants</span><a class="btn" href="index-page.html">Open</a></div><div><b>Your Collection</b><span>Wishlist + mastered</span><a class="btn" href="wishlist.html">Open</a></div><div><b>Report</b><span>Flag a site problem</span><a class="btn" href="report.html">Open</a></div></div></div></section></main>`)}
 function initSimple(){const p=location.pathname.split("/").pop()||"index.html";if(p==="index.html")return initHome();if(p==="index-page.html")return initIndex();if(p==="trades.html")return initTrades();if(p==="new.html")return pageShell("New","LATEST","New this week","The newest Season 4 sprite families currently tracked by SpriteSwap.",`<div class="grid">${spriteCards(NEW)}</div>`);if(p==="upcoming.html")return initUpcoming();if(p==="leaderboard.html")return initLeaderboard();if(p==="wishlist.html")return initWishlist();
 if(p==="profile.html")return initProfile();if(p==="account.html")return initAccount();if(p==="report.html")return pageShell("Report","SAFETY","Report a problem","Tell the SpriteSwap team about a listing, profile or site issue.",`<div class="hero-card"><label>What happened?</label><textarea class="input" style="width:100%;min-height:140px;margin-top:10px" placeholder="Describe the issue…"></textarea><div class="actions"><button class="btn primary" onclick="alert('Thanks — your report form is ready to connect to the backend.')">Submit report</button></div></div>`);if(p==="rules.html")return pageShell("Rules","COMMUNITY","Community rules","Keep SpriteSwap friendly and useful for everyone.",`<div class="list">${["Be respectful.","No scams or fake trades.","Do not spam listings.","Use the report page for problems.","Have fun trading sprites."].map((x,i)=>`<div class="row"><div class="rank">${i+1}</div><div>${x}</div></div>`).join("")}</div>`);if(p==="community.html")return initCommunity();return initIndex()}
-document.addEventListener("DOMContentLoaded",initSimple);
+document.addEventListener("DOMContentLoaded",initSimple)function initModerationPanel(){
+  const m=moderationData();
+  return `<div class="moderation-panel"><div><b>SpriteSwap Safety Bot</b><span class="muted">Local moderation preview · ${moderationStatus()}</span></div><div class="muted">Reports are reviewed locally in this demo. Three confirmed warnings trigger a 24-hour restriction; repeated violations can trigger a lifetime restriction.</div></div>`;
+}
+;
