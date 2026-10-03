@@ -8,7 +8,7 @@ function layout(title,active,content){
   if(!app) throw new Error("SpriteSwap app root is missing");
   app.innerHTML=`<header class="topbar"><div class="shell"><a class="brand" href="index.html"><span class="mark">S</span><span>SpriteSwap</span></a><nav class="nav">${nav.map(([n,h])=>`<a class="${n===active?"active":""}" href="${h}">${n}</a>`).join("")}</nav><a class="btn nav-cta" href="trades.html">Trade</a></div></header>${content}<footer class="footer"><div class="shell"><b>SpriteSwap</b><span>Community sprite trading hub</span></div></footer>`;
 }
-const FAMILIES=["Jonesy","Adventure","Bush","Sonic","Tails","Shadow","8-Bit","Jackrabbit","Crown","Killswitch","Klombo","Mega Man","Overshield","X-Ray","Onigiri","Storm Scout","Blinky","Birthday","Crash Bandicoot","Pond","Morgana","Spooky Dash","Vampire","The Deer","Dumpster Dive"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
+const FAMILIES=["Jonesy","Adventure","Air","Aura","8-Bit","Batman","Birthday","Blinky","Boss","Burnt Peanut","Bush","Crash Bandicoot","Crown","Demon","Dream","Duck","Dumpster Dive","Earth","Fire","Fishy","Ghost","Grim","Ironmouse","Jackrabbit","John Wick","Killswitch","King","Klombo","Llama","Mega Man","Morgana","Onigiri","Overshield","Peeky Peely","Pond","Pollo","Punk","Seven","Shadow","Sonic","Spooky Dash","Storm Scout","Striker","Tails","The Deer","Vampire","Vini Jr.","Water","X-Ray","Zero Point","Peely"];const TIERS=["Base","Gold","Cheat Master","Loot Hacker","Bounty Hunter","Trick or Treat"];const NEW=["Spooky Dash","Vampire","The Deer","Dumpster Dive"];const CURRENT_SEASON="Chapter 7 Season 4";const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const tierSlugs=t=>({"Base":[""],"Gold":["gold"],"Cheat Master":["cheat-master","cheatmaster"],"Loot Hacker":["loot-hacker"],"Bounty Hunter":["bounty-hunter"],"Trick or Treat":["trick-or-treat","trick-treat"]}[t]||[""]);
 const assetSlug=s=>String(s).replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
 const imageCandidates=(name,tier="Base")=>{
   const n=assetSlug(name),variant=tier==="Base"?"":assetSlug(tier)+"_";
@@ -84,15 +84,33 @@ function issueWarning(reason){const m=moderationData();m.warnings=(m.warnings||0
 function isBanned(){const m=moderationData();if(m.lifetime)return true;if(m.bannedUntil>Date.now())return true;if(m.bannedUntil){m.bannedUntil=0;saveModeration(m)}return false}
 function botMessage(){const m=moderationData();if(m.lifetime)return "Safety Bot: lifetime restriction is active.";if(m.bannedUntil>Date.now())return "Safety Bot: 24-hour restriction is active.";return m.warnings?("Safety Bot: "+m.warnings+"/3 warnings."): "Safety Bot: good standing."}
 function initTrades(){
+  let channel=null;
+  try{channel="BroadcastChannel" in window?new BroadcastChannel("spriteswap-trading"):null}catch(e){}
   const render=()=>{
     const q=(document.getElementById("tradeSearch")?.value||"").toLowerCase().trim();
     const trades=tradeData().filter(x=>!q||(x.title+" "+x.sprite+" "+x.trader).toLowerCase().includes(q));
-    layout("Trades","Trades",`<main><section class="hero"><div class="shell"><div class="kicker">TRADING CHAT</div><h1>Talk trades.<br><span style="color:var(--mint)">Find sprites.</span></h1><p>Trading chat is saved on this browser in this build. Pick a sprite, describe what you want, and post.</p><div class="actions"><button class="btn primary" id="postTrade">Post a trade</button><a class="btn" href="index-page.html">Browse sprites</a></div></div></section><section class="section"><div class="shell"><div class="trade-layout"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Trading Chat</b><span class="online-dot">● Local chat</span></div><div id="tradeMessages" class="chat-messages">${trades.map((x,i)=>`<div class="chat-msg"><div class="avatar">${esc((x.trader||"S")[0])}</div><div class="chat-bubble"><div><b>${esc(x.trader)}</b><span class="muted"> · ${esc(x.time||"now")}</span></div><div>${esc(x.title)}</div><small>${esc(x.sprite)}</small></div><button class="chat-view" data-trade="${i}">View</button></div>`).join("")||'<div class="notice">No trade messages yet. Start the chat.</div>'}</div><div class="chat-compose"><input id="tradeSearch" class="input" value="${esc(q)}" placeholder="Search the trading chat…"><button id="quickPost" class="btn primary">Post trade</button></div></div><aside class="trade-side"><h3>Trading rules</h3><p class="muted">Keep offers clear, don't spam, and only trade sprites. Reports can be reviewed by the Safety Bot.</p><a class="btn" href="report.html">Report a message</a></aside></div></div></section></main>`);
+    layout("Trades","Trades",`<main><section class="hero"><div class="shell"><div class="kicker">TRADING CHAT</div><h1>Trade in real time.<br><span style="color:var(--mint)">Talk like a community.</span></h1><p>Discord-style trading chat for SpriteSwap. Messages sync between open SpriteSwap tabs on the same device in this static build.</p><div class="actions"><button class="btn primary" id="postTrade">Post a trade</button><a class="btn" href="index-page.html">Browse sprites</a></div></div></section><section class="section"><div class="shell"><div class="trade-layout"><div class="trade-chat"><div class="chat-head"><b>SpriteSwap Trading Chat</b><span class="online-dot">● LIVE</span></div><div id="tradeMessages" class="chat-messages">${trades.map((x,i)=>`<div class="chat-msg"><div class="avatar">${esc((x.trader||"S")[0])}</div><div class="chat-bubble"><div><b>${esc(x.trader)}</b><span class="muted"> · ${esc(x.time||"now")}</span></div><div>${esc(x.title)}</div><small>🔄 ${esc(x.sprite)}</small></div><button class="chat-view" data-trade="${i}">View</button></div>`).join("")||'<div class="notice">No trade messages yet. Start the chat.</div>'}</div><div class="chat-compose"><input id="tradeSearch" class="input" value="${esc(q)}" placeholder="Search trading chat…"><input id="tradeMessage" class="input" placeholder="Say what you want to trade…" maxlength="180"><button id="quickPost" class="btn primary">Send</button></div></div><aside class="trade-side"><h3>Trading room</h3><p class="muted">Post an offer, name the sprite, and keep trades clear. The Safety Bot checks new messages before they appear.</p><div class="notice">${esc(botMessage())}</div><a class="btn" href="report.html">Report a message</a></aside></div></div></section></main>`);
     document.getElementById("tradeSearch").oninput=render;
-    const post=()=>{if(isBanned()){alert(botMessage());return}const title=prompt("What are you offering / looking for?");if(!title)return;const sprite=prompt("Which sprite?")||"Any sprite";if(moderationCheck(title+" "+sprite)){const m=issueWarning("Potentially rule-breaking trade content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return}const a=tradeData();a.unshift({title,sprite,trader:profileData().name||"SpriteSwap Trader",time:"just now"});saveTrades(a);render()};
-    document.getElementById("postTrade").onclick=post;document.getElementById("quickPost").onclick=post;
+    const post=()=>{
+      if(isBanned()){alert(botMessage());return}
+      const input=document.getElementById("tradeMessage");
+      const title=input?.value.trim();
+      if(!title)return;
+      const sprite=prompt("Which sprite is involved?")||"Any sprite";
+      if(moderationCheck(title+" "+sprite)){const m=issueWarning("Potentially rule-breaking trade content.");alert(m.bannedUntil?"Safety Bot: 24-hour restriction applied.":"Safety Bot: warning issued ("+m.warnings+"/3).");render();return}
+      const a=tradeData();
+      a.unshift({title,sprite,trader:profileData().name||"SpriteSwap Trader",time:"just now"});
+      saveTrades(a.slice(0,100));
+      if(channel)try{channel.postMessage({type:"new-trade"})}catch(e){}
+      render();
+    };
+    document.getElementById("postTrade").onclick=post;
+    document.getElementById("quickPost").onclick=post;
+    document.getElementById("tradeMessage").onkeydown=e=>{if(e.key==="Enter")post()};
     document.querySelectorAll("[data-trade]").forEach(b=>b.onclick=()=>{const x=trades[Number(b.dataset.trade)];if(x)alert(x.title+"\n\n"+x.sprite+"\nPosted by "+x.trader)});
   };
+  if(channel)channel.onmessage=()=>render();
+  window.addEventListener("storage",e=>{if(e.key==="spriteswap-trades")render()});
   render();
 }
 function initUpcoming(){
